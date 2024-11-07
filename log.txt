@@ -1,0 +1,6 @@
+Access request for virtual address: Virtual page number: 0 Offset: 23
+TLB miss for virtual page nr: 0
+Page table miss for virtual page number: 0
+Page fault for virtual page number: 0. Loading page from disk.
+Loaded virtual page number: 0 into physical frame number: 0
+Loaded data: 23 from: Frame number: 0 Offset: 23
