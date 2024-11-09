@@ -9,8 +9,11 @@ import com.example.vms.model.OptimalReplacement;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@SessionAttributes({"loadAddress", "storeAddress", "storeData"})
 public class MemoryController {
 
     private MemoryManager memoryManager;
@@ -18,16 +21,17 @@ public class MemoryController {
     private int virtualAddressWidth;
     private int pageSize;
     private int tlbSize;
-    private int pageTableSize;
     private int physicalMemorySize;
     private int secondaryMemorySize;
+    private int virtualMemorySize;
+    private int pageTableSize;
 
     public MemoryController() {
-        initializeMemoryManager(10, 64, 2, 4, 128, 256, "FIFO");
+        initializeMemoryManager(0, 0, 0,  0,  "FIFO");
     }
 
-    private void initializeMemoryManager(int virtualAddressWidth, int pageSize, int tlbSize, int pageTableSize,
-                                         int physicalMemorySize, int secondaryMemorySize, String replacementAlgorithm) {
+    private void initializeMemoryManager(int virtualAddressWidth, int pageSize, int tlbSize,
+                                         int physicalMemorySize, String replacementAlgorithm) {
         ReplacementAlgorithm algorithm;
         switch (replacementAlgorithm) {
             case "LRU":
@@ -41,20 +45,25 @@ public class MemoryController {
                 algorithm = new FIFOReplacement();
                 break;
         }
+        if(virtualAddressWidth == 0 && pageSize == 0 && tlbSize == 0 && physicalMemorySize == 0)
+            memoryManager = new MemoryManager();
+        else{
+            if(pageSize != 0) {
+                // Store configuration parameters
+                this.virtualAddressWidth = virtualAddressWidth;
+                this.pageSize = pageSize;
+                this.tlbSize = tlbSize;
+                this.physicalMemorySize = physicalMemorySize;
+                this.currentReplacementAlgorithm = replacementAlgorithm;
+                this.virtualMemorySize = (int) Math.pow(2, virtualAddressWidth);
+                this.pageTableSize = (int) (virtualMemorySize / pageSize);
+                int totalPages = (int) (virtualMemorySize / pageSize);
+                int nrFrames = (int) (physicalMemorySize / pageSize);
+                this.secondaryMemorySize = (totalPages - nrFrames) * pageSize;
 
-        int nrFrames = physicalMemorySize / pageSize;
-        int maxDiskPages = secondaryMemorySize / pageSize;
-
-        // Store configuration parameters
-        this.virtualAddressWidth = virtualAddressWidth;
-        this.pageSize = pageSize;
-        this.tlbSize = tlbSize;
-        this.pageTableSize = pageTableSize;
-        this.physicalMemorySize = physicalMemorySize;
-        this.secondaryMemorySize = secondaryMemorySize;
-        this.currentReplacementAlgorithm = replacementAlgorithm;
-
-        memoryManager = new MemoryManager(virtualAddressWidth, tlbSize, pageTableSize, nrFrames, maxDiskPages, pageSize, algorithm);
+                memoryManager = new MemoryManager(virtualAddressWidth, tlbSize, pageSize, physicalMemorySize, algorithm);
+            }
+        }
     }
 
     @GetMapping("/")
@@ -71,11 +80,21 @@ public class MemoryController {
         model.addAttribute("virtualAddressWidth", virtualAddressWidth);
         model.addAttribute("pageSize", pageSize);
         model.addAttribute("tlbSize", tlbSize);
-        model.addAttribute("pageTableSize", pageTableSize);
         model.addAttribute("physicalMemorySize", physicalMemorySize);
         model.addAttribute("secondaryMemorySize", secondaryMemorySize);
         model.addAttribute("replacementAlgorithm", currentReplacementAlgorithm);
-        model.addAttribute("virtualMemorySize", (int) Math.pow(2, virtualAddressWidth));
+        model.addAttribute("virtualMemorySize", virtualMemorySize);
+        model.addAttribute("pageTableSize", pageTableSize);
+
+        if (!model.containsAttribute("loadAddress")) {
+            model.addAttribute("loadAddress", 0);
+        }
+        if (!model.containsAttribute("storeAddress")) {
+            model.addAttribute("storeAddress", 0);
+        }
+        if (!model.containsAttribute("storeData")) {
+            model.addAttribute("storeData", 0);
+        }
 
         return "index";
     }
@@ -85,32 +104,71 @@ public class MemoryController {
             @RequestParam("virtualAddressWidth") int virtualAddressWidth,
             @RequestParam("pageSize") int pageSize,
             @RequestParam("tlbSize") int tlbSize,
-            @RequestParam("pageTableSize") int pageTableSize,
             @RequestParam("physicalMemorySize") int physicalMemorySize,
-            @RequestParam("secondaryMemorySize") int secondaryMemorySize,
-            @RequestParam("replacementAlgorithm") String replacementAlgorithm) {
+            @RequestParam("replacementAlgorithm") String replacementAlgorithm,
+            Model model) {
 
         // Initialize MemoryManager with user-configured parameters
-        initializeMemoryManager(virtualAddressWidth, pageSize, tlbSize, pageTableSize, physicalMemorySize, secondaryMemorySize, replacementAlgorithm);
+        initializeMemoryManager(virtualAddressWidth, tlbSize, pageSize, physicalMemorySize, replacementAlgorithm);
+        memoryManager.printMemoryContents();
+
+        // Update the model with the latest values to retain them in the form fields
+        model.addAttribute("virtualAddressWidth", virtualAddressWidth);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("tlbSize", tlbSize);
+        model.addAttribute("physicalMemorySize", physicalMemorySize);
+        model.addAttribute("secondaryMemorySize", secondaryMemorySize);
+        model.addAttribute("replacementAlgorithm", replacementAlgorithm);
+        model.addAttribute("virtualMemorySize", virtualMemorySize);
+        model.addAttribute("pageTableSize", pageTableSize);
+
         return "redirect:/";
     }
 
     @PostMapping("/load")
-    public String loadAddress(@RequestParam("loadAddress") int address) {
+    public String loadAddress(@RequestParam("loadAddress") int address, Model model) {
         memoryManager.load(address);
+        model.addAttribute("loadAddress", address);
         return "redirect:/";
     }
 
     @PostMapping("/store")
-    public String storeAddress(@RequestParam("storeAddress") int address, @RequestParam("data") int data) {
+    public String storeAddress(@RequestParam("storeAddress") int address, @RequestParam("data") int data, Model model) {
         memoryManager.store(address, data);
+        model.addAttribute("storeAddress", address);
+        model.addAttribute("storeData", data);
         return "redirect:/";
     }
 
     @PostMapping("/reset")
-    public String resetSimulation() {
+    public String resetSimulation(Model model, SessionStatus status, RedirectAttributes redirectAttributes) {
+        // Reset results and memory manager state
         Results.reset();
-        memoryManager = null; // Clear memory manager, requiring reconfiguration
+        memoryManager = new MemoryManager();
+        status.setComplete();
+
+        virtualAddressWidth = 0;
+        virtualMemorySize = 0;
+        pageTableSize = 0;
+        tlbSize = 0;
+        physicalMemorySize = 0;
+        secondaryMemorySize = 0;
+        pageSize = 0;
+
+        // Add the default values to the model to reset the fields
+        model.addAttribute("virtualAddressWidth", virtualAddressWidth);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("tlbSize", tlbSize);
+        model.addAttribute("physicalMemorySize", physicalMemorySize);
+        model.addAttribute("secondaryMemorySize", secondaryMemorySize);
+        model.addAttribute("replacementAlgorithm", "FIFO");
+        model.addAttribute("loadAddress", 0);
+        model.addAttribute("storeAddress", 0);
+        model.addAttribute("storeData", 0);
+        model.addAttribute("virtualMemorySize", virtualMemorySize);
+        model.addAttribute("pageTableSize", pageTableSize);
+
+        // Redirect to the home page after resetting
         return "redirect:/";
     }
 }

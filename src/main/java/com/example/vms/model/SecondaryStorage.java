@@ -17,12 +17,16 @@ public class SecondaryStorage {
         }
     }
 
-    public void store(int vpn, Page page) { disk.put(vpn, page);}// store a page in secondary storage
+    public void store(int vpn, Page page) {
+        disk.put(vpn, page);
+        LogResults.log("Stored page with VPN " + vpn + " in secondary storage.");
+    }
 
     public Page load(int vpn) { // retrieve a page from the secondary storage
         if (!disk.containsKey(vpn)) {
             throw new IllegalArgumentException("Invalid VPN: Page not found.");
         }
+        LogResults.log("Loaded page with VPN " + vpn + " from secondary storage.");
         return disk.get(vpn);
     }
 
@@ -55,5 +59,8 @@ public class SecondaryStorage {
 
         logBuilder.append("----------------------");
         LogResults.log(logBuilder.toString());
+    }
+    public boolean containsPage(int vpn) {
+        return disk.containsKey(vpn);
     }
 }

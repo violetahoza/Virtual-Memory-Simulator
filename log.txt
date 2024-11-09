@@ -1,6 +1,911 @@
-Access request for virtual address: Virtual page number: 0 Offset: 23
-TLB miss for virtual page nr: 0
+Memory Manager reset to initial state.
+Main memory contents (size: 0):
+----------------------
+Disk contents:
+----------------------
+Page 0:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 1:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 2:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 3:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 4:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 5:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 6:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 7:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 8:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 9:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 10:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 11:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 12:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 13:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 14:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 15:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 16:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 17:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 18:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 19:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 20:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 21:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 22:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 23:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 24:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 25:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 26:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 27:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 28:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 29:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 30:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 31:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 32:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 33:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 34:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 35:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 36:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 37:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 38:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 39:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 40:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 41:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 42:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 43:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 44:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 45:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 46:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 47:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 48:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 49:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 50:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 51:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 52:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 53:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 54:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 55:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 56:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 57:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 58:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 59:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 60:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 61:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 62:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 63:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 64:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 65:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 66:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 67:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 68:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 69:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 70:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 71:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 72:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 73:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 74:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 75:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 76:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 77:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 78:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 79:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 80:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 81:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 82:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 83:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 84:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 85:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 86:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 87:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 88:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 89:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 90:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 91:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 92:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 93:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 94:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 95:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 96:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 97:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 98:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 99:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 100:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 101:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 102:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 103:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 104:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 105:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 106:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 107:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 108:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 109:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 110:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 111:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 112:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 113:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 114:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 115:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 116:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 117:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 118:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 119:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 120:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 121:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 122:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 123:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 124:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+Page 125:
+Page contents:
+0: 0
+1: 1
+2: 2
+3: 3
+----------------------
+TLB contents:
+----------------------
+----------------------
+Page table contents:
+----------------------
+0: Valid: false Dirty: false Referenced: false Frame: -1
+1: Valid: false Dirty: false Referenced: false Frame: -1
+2: Valid: false Dirty: false Referenced: false Frame: -1
+3: Valid: false Dirty: false Referenced: false Frame: -1
+4: Valid: false Dirty: false Referenced: false Frame: -1
+5: Valid: false Dirty: false Referenced: false Frame: -1
+6: Valid: false Dirty: false Referenced: false Frame: -1
+7: Valid: false Dirty: false Referenced: false Frame: -1
+8: Valid: false Dirty: false Referenced: false Frame: -1
+9: Valid: false Dirty: false Referenced: false Frame: -1
+10: Valid: false Dirty: false Referenced: false Frame: -1
+11: Valid: false Dirty: false Referenced: false Frame: -1
+12: Valid: false Dirty: false Referenced: false Frame: -1
+13: Valid: false Dirty: false Referenced: false Frame: -1
+14: Valid: false Dirty: false Referenced: false Frame: -1
+15: Valid: false Dirty: false Referenced: false Frame: -1
+16: Valid: false Dirty: false Referenced: false Frame: -1
+17: Valid: false Dirty: false Referenced: false Frame: -1
+18: Valid: false Dirty: false Referenced: false Frame: -1
+19: Valid: false Dirty: false Referenced: false Frame: -1
+20: Valid: false Dirty: false Referenced: false Frame: -1
+21: Valid: false Dirty: false Referenced: false Frame: -1
+22: Valid: false Dirty: false Referenced: false Frame: -1
+23: Valid: false Dirty: false Referenced: false Frame: -1
+24: Valid: false Dirty: false Referenced: false Frame: -1
+25: Valid: false Dirty: false Referenced: false Frame: -1
+26: Valid: false Dirty: false Referenced: false Frame: -1
+27: Valid: false Dirty: false Referenced: false Frame: -1
+28: Valid: false Dirty: false Referenced: false Frame: -1
+29: Valid: false Dirty: false Referenced: false Frame: -1
+30: Valid: false Dirty: false Referenced: false Frame: -1
+31: Valid: false Dirty: false Referenced: false Frame: -1
+32: Valid: false Dirty: false Referenced: false Frame: -1
+33: Valid: false Dirty: false Referenced: false Frame: -1
+34: Valid: false Dirty: false Referenced: false Frame: -1
+35: Valid: false Dirty: false Referenced: false Frame: -1
+36: Valid: false Dirty: false Referenced: false Frame: -1
+37: Valid: false Dirty: false Referenced: false Frame: -1
+38: Valid: false Dirty: false Referenced: false Frame: -1
+39: Valid: false Dirty: false Referenced: false Frame: -1
+40: Valid: false Dirty: false Referenced: false Frame: -1
+41: Valid: false Dirty: false Referenced: false Frame: -1
+42: Valid: false Dirty: false Referenced: false Frame: -1
+43: Valid: false Dirty: false Referenced: false Frame: -1
+44: Valid: false Dirty: false Referenced: false Frame: -1
+45: Valid: false Dirty: false Referenced: false Frame: -1
+46: Valid: false Dirty: false Referenced: false Frame: -1
+47: Valid: false Dirty: false Referenced: false Frame: -1
+48: Valid: false Dirty: false Referenced: false Frame: -1
+49: Valid: false Dirty: false Referenced: false Frame: -1
+50: Valid: false Dirty: false Referenced: false Frame: -1
+51: Valid: false Dirty: false Referenced: false Frame: -1
+52: Valid: false Dirty: false Referenced: false Frame: -1
+53: Valid: false Dirty: false Referenced: false Frame: -1
+54: Valid: false Dirty: false Referenced: false Frame: -1
+55: Valid: false Dirty: false Referenced: false Frame: -1
+56: Valid: false Dirty: false Referenced: false Frame: -1
+57: Valid: false Dirty: false Referenced: false Frame: -1
+58: Valid: false Dirty: false Referenced: false Frame: -1
+59: Valid: false Dirty: false Referenced: false Frame: -1
+60: Valid: false Dirty: false Referenced: false Frame: -1
+61: Valid: false Dirty: false Referenced: false Frame: -1
+62: Valid: false Dirty: false Referenced: false Frame: -1
+63: Valid: false Dirty: false Referenced: false Frame: -1
+64: Valid: false Dirty: false Referenced: false Frame: -1
+65: Valid: false Dirty: false Referenced: false Frame: -1
+66: Valid: false Dirty: false Referenced: false Frame: -1
+67: Valid: false Dirty: false Referenced: false Frame: -1
+68: Valid: false Dirty: false Referenced: false Frame: -1
+69: Valid: false Dirty: false Referenced: false Frame: -1
+70: Valid: false Dirty: false Referenced: false Frame: -1
+71: Valid: false Dirty: false Referenced: false Frame: -1
+72: Valid: false Dirty: false Referenced: false Frame: -1
+73: Valid: false Dirty: false Referenced: false Frame: -1
+74: Valid: false Dirty: false Referenced: false Frame: -1
+75: Valid: false Dirty: false Referenced: false Frame: -1
+76: Valid: false Dirty: false Referenced: false Frame: -1
+77: Valid: false Dirty: false Referenced: false Frame: -1
+78: Valid: false Dirty: false Referenced: false Frame: -1
+79: Valid: false Dirty: false Referenced: false Frame: -1
+80: Valid: false Dirty: false Referenced: false Frame: -1
+81: Valid: false Dirty: false Referenced: false Frame: -1
+82: Valid: false Dirty: false Referenced: false Frame: -1
+83: Valid: false Dirty: false Referenced: false Frame: -1
+84: Valid: false Dirty: false Referenced: false Frame: -1
+85: Valid: false Dirty: false Referenced: false Frame: -1
+86: Valid: false Dirty: false Referenced: false Frame: -1
+87: Valid: false Dirty: false Referenced: false Frame: -1
+88: Valid: false Dirty: false Referenced: false Frame: -1
+89: Valid: false Dirty: false Referenced: false Frame: -1
+90: Valid: false Dirty: false Referenced: false Frame: -1
+91: Valid: false Dirty: false Referenced: false Frame: -1
+92: Valid: false Dirty: false Referenced: false Frame: -1
+93: Valid: false Dirty: false Referenced: false Frame: -1
+94: Valid: false Dirty: false Referenced: false Frame: -1
+95: Valid: false Dirty: false Referenced: false Frame: -1
+96: Valid: false Dirty: false Referenced: false Frame: -1
+97: Valid: false Dirty: false Referenced: false Frame: -1
+98: Valid: false Dirty: false Referenced: false Frame: -1
+99: Valid: false Dirty: false Referenced: false Frame: -1
+100: Valid: false Dirty: false Referenced: false Frame: -1
+101: Valid: false Dirty: false Referenced: false Frame: -1
+102: Valid: false Dirty: false Referenced: false Frame: -1
+103: Valid: false Dirty: false Referenced: false Frame: -1
+104: Valid: false Dirty: false Referenced: false Frame: -1
+105: Valid: false Dirty: false Referenced: false Frame: -1
+106: Valid: false Dirty: false Referenced: false Frame: -1
+107: Valid: false Dirty: false Referenced: false Frame: -1
+108: Valid: false Dirty: false Referenced: false Frame: -1
+109: Valid: false Dirty: false Referenced: false Frame: -1
+110: Valid: false Dirty: false Referenced: false Frame: -1
+111: Valid: false Dirty: false Referenced: false Frame: -1
+112: Valid: false Dirty: false Referenced: false Frame: -1
+113: Valid: false Dirty: false Referenced: false Frame: -1
+114: Valid: false Dirty: false Referenced: false Frame: -1
+115: Valid: false Dirty: false Referenced: false Frame: -1
+116: Valid: false Dirty: false Referenced: false Frame: -1
+117: Valid: false Dirty: false Referenced: false Frame: -1
+118: Valid: false Dirty: false Referenced: false Frame: -1
+119: Valid: false Dirty: false Referenced: false Frame: -1
+120: Valid: false Dirty: false Referenced: false Frame: -1
+121: Valid: false Dirty: false Referenced: false Frame: -1
+122: Valid: false Dirty: false Referenced: false Frame: -1
+123: Valid: false Dirty: false Referenced: false Frame: -1
+124: Valid: false Dirty: false Referenced: false Frame: -1
+125: Valid: false Dirty: false Referenced: false Frame: -1
+126: Valid: false Dirty: false Referenced: false Frame: -1
+127: Valid: false Dirty: false Referenced: false Frame: -1
+----------------------
+Access request for virtual address: Virtual page number: 1 Offset: 1
+TLB miss for virtual page nr: 1
+Page table miss for virtual page number: 1
+Page fault for virtual page number: 1. Loading page from disk.
+Loaded page with VPN 1 from secondary storage.
+Loaded virtual page number: 1 into physical frame number: 0
+Loaded data: 1 from: Frame number: 0 Offset: 1
+Storing data to: Virtual page number: 0 Offset: 2 . Data stored: 3
+TLB miss for virtual page number: 0
 Page table miss for virtual page number: 0
 Page fault for virtual page number: 0. Loading page from disk.
-Loaded virtual page number: 0 into physical frame number: 0
-Loaded data: 23 from: Frame number: 0 Offset: 23
+Loaded page with VPN 0 from secondary storage.
+Loaded virtual page number: 0 into physical frame number: 1
+Stored data at: com.example.vms.model.Address@1e8f61ed
+Stored data: 3 to: Frame number: 1 Offset: 2

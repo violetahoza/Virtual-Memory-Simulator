@@ -17,6 +17,7 @@ public class MainMemory {
         this.pageSize = pageSize;
         this.memory = new HashMap<>(); // Start with an empty memory (no pages loaded)
         this.lastFrameNr = 0;          // Initially, no frames are occupied
+        //populateMemory();
     }
 
     // Loads data from memory for a specific address
@@ -54,17 +55,15 @@ public class MainMemory {
             }
             return -1; // No frames available
         }
-
         memory.put(lastFrameNr, page.getCopy());
         return lastFrameNr++;
     }
 
     public void removePage(int frameNumber) {
         memory.remove(frameNumber);
-        // Don't decrement lastFrameNr, just remove the page
     }
 
-    // Checks if memory is full
+    // Check if memory is full
     public boolean isFull() {
         return memory.size() >= nrFrames;
     }
@@ -73,9 +72,8 @@ public class MainMemory {
     public Page getPage(int frameNr) {
         return memory.get(frameNr);
     }
-    public Map<Integer, Page> getMemory() {
-        return memory;
-    }
+    public Map<Integer, Page> getMemory() {return memory;}
+
     // Retrieve the full memory contents as a map (frame -> {address -> data})
     public Map<Integer, Map<Integer, Integer>> getMemoryContents() {
         Map<Integer, Map<Integer, Integer>> memoryCopy = new HashMap<>();
@@ -106,5 +104,18 @@ public class MainMemory {
         }
         logBuilder.append("----------------------");
         LogResults.log(logBuilder.toString());
+    }
+
+    // Populate MainMemory with pages (simulating initial data)
+    private void populateMemory() {
+        // Populate memory with pages containing some data
+        for (int i = 0; i < nrFrames; i++) {
+            Page page = new Page(pageSize); // Create a page with the specified size
+            // Fill the page with some dummy data (example: storing index value at each offset)
+            for (int offset = 0; offset < pageSize; offset++) {
+                page.store(offset, i * 100 + offset);
+            }
+            memory.put(i, page); // Add the page to memory
+        }
     }
 }
