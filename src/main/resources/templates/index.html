@@ -11,37 +11,31 @@
             background-color: #F8EFF7;
             font-size: 0.9rem;
         }
-
         .header {
             background-color: #cdb4db;
             color: white;
             padding: 5px 0;
             text-align: center;
         }
-
         .card-body {
             background-color: #ffafcc;
             color: white;
             padding: 5px 15px;
         }
-
         .card-header {
             background-color: #cdb4db;
             color: white;
             padding: 5px 15px;
         }
-
         .btn-custom {
             background-color: #F8EFF7;
             color: #cdb4db;
             border: none;
             padding: 6px 12px;
         }
-
         .btn-custom:hover {
             background-color: #A88CA4;
         }
-
         .form-control {
             border-radius: 0.375rem;
             margin-bottom: 0.5rem;
@@ -49,105 +43,84 @@
             color: #A88CA4;
             font-size: 0.9rem;
         }
-
         .container {
             margin-top: 20px;
         }
-
         .result-list li {
             font-size: 1rem;
             margin-bottom: 0.4rem;
             background-color: #ffe5ec;
             color: #A88CA4;
         }
-
         .icon {
             font-size: 18px;
             margin-right: 10px;
         }
-
         .computed-size {
             font-size: 1rem;
             font-weight: normal;
             align-self: center;
             margin-left: 1rem;
         }
-
         .form-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
         }
-
         .form-group {
             width: 45%;
         }
-
         .result-list li span {
             font-weight: bold;
         }
-
         .row {
             display: flex;
-            flex-wrap: wrap;
         }
-
         .col-md-4 {
             margin-bottom: 20px;
         }
-
         .table thead th {
             text-align: center;
             padding: 5px 15px;
         }
-
         .table td, .table th {
             padding: 0.5rem;
             text-align: center;
             color: white;
         }
-
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>Virtual Memory Simulator</h1>
-</div>
-
+<div class="header"> <h1>Virtual Memory Simulator</h1></div>
 <div class="container">
     <div class="row">
         <!-- Configuration Form Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h4>System Parameters Configuration</h4>
-                </div>
+                <div class="card-header"> <h4>System Parameters Configuration</h4> </div>
                 <div class="card-body">
                     <form action="/configure" method="post">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="virtualAddressWidth">Virtual Address Width (bits):</label>
-                                <input type="number" class="form-control" id="virtualAddressWidth" name="virtualAddressWidth" th:value="${virtualAddressWidth}" required>
+                                <input type="number" class="form-control" id="virtualAddressWidth" name="virtualAddressWidth" min="1" placeholder="Enter virtual address width"  th:value="${virtualAddressWidth}" required>
                             </div>
                             <div class="form-group">
                                 <label for="physicalMemorySize">Physical Memory Size (bytes):</label>
-                                <input type="number" class="form-control" id="physicalMemorySize" name="physicalMemorySize" th:value="${physicalMemorySize}" required>
+                                <input type="number" class="form-control" id="physicalMemorySize" min="1" placeholder="Enter main memory size"  name="physicalMemorySize" th:value="${physicalMemorySize}" required>
                             </div>
-
                         </div>
-
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="pageSize">Page Size (bytes):</label>
-                                <input type="number" class="form-control" id="pageSize" name="pageSize" th:value="${pageSize}" required>
+                                <input type="number" class="form-control" id="pageSize" name="pageSize" min="1" placeholder="Enter page size" th:value="${pageSize}" required>
                             </div>
                             <div class="form-group">
                                 <label for="tlbSize">TLB Size (entries):</label>
-                                <input type="number" class="form-control" id="tlbSize" name="tlbSize" th:value="${tlbSize}" required>
+                                <input type="number" class="form-control" id="tlbSize" min="1" placeholder="Enter tlb size" name="tlbSize" th:value="${tlbSize}" required>
                             </div>
                         </div>
-
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="replacementAlgorithm">Replacement Algorithm:</label>
@@ -158,34 +131,40 @@
                                     <option value="Optimal">Optimal</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="computed-size">
-                                <p>Virtual Memory Size: <span th:text="${virtualMemorySize}">0</span> bytes</p>
-                                <p>Page Table Size: <span th:text="${pageTableSize}">0</span> entries</p>
-                                <p>Disk Size: <span th:text="${secondaryMemorySize}">0</span> bytes</p>
+                            <div class="form-group">
+                                <label for="secondaryMemorySize">Disk Size (bytes):</label>
+                                <input type="number" class="form-control" id="secondaryMemorySize" min="1" placeholder="Enter disk size" name="secondaryMemorySize" th:value="${secondaryMemorySize}" required>
                             </div>
                         </div>
-
+                        <div class="form-row">
+                            <div class="computed-size">
+                                <p>Virtual Memory Size: <span id="virtualMemorySize" th:text="${virtualMemorySize}">0</span> bytes</p>
+                                <p>Page Table Size: <span id="pageTableSize" th:text="${pageTableSize}">0</span> entries</p>
+                            </div>
+                        </div>
                         <button type="submit" formaction="/configure" class="btn btn-custom"><i class="fa fa-cogs icon"></i> Configure</button>
                         <button type="submit" formaction="/reset" class="btn btn-custom"><i class="fa fa-refresh icon"></i> Reset</button>
                     </form>
                 </div>
             </div>
         </div>
-
         <!-- Store and Load Address Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h4>Store and Load Address</h4>
-                </div>
+                <div class="card-header"><h4>Store and Load Address</h4></div>
                 <div class="card-body">
+                    <form action="/allocate" method="post">
+                        <div class="form-group">
+                            <label for="allocatePage">Allocate Virtual Page at VPN:</label>
+                            <input type="number" class="form-control" id="allocatePage" name="allocatePage" placeholder="Enter page number" th:value="${allocatePage}" min="0" required>
+                        </div>
+                        <button type="submit" class="btn btn-custom"><i class="fa fa-file icon"></i> Allocate</button>
+                    </form>
+                    <hr>
                     <form action="/load" method="post">
                         <div class="form-group">
                             <label for="loadAddress">Read from Virtual Address:</label>
-                            <input type="number" class="form-control" id="loadAddress" name="loadAddress" th:value="${loadAddress}" required>
+                            <input type="number" class="form-control" id="loadAddress" name="loadAddress" min="0" placeholder="Enter page number" th:value="${loadAddress}" required>
                         </div>
                         <button type="submit" class="btn btn-custom"><i class="fa fa-download icon"></i> Load</button>
                     </form>
@@ -193,24 +172,21 @@
                     <form action="/store" method="post">
                         <div class="form-group">
                             <label for="storeAddress">Write to Virtual Address:</label>
-                            <input type="number" class="form-control" id="storeAddress" name="storeAddress" th:value="${storeAddress}" required>
+                            <input type="number" class="form-control" id="storeAddress" name="storeAddress" min="0" placeholder="Enter page number"  th:value="${storeAddress}" required>
                         </div>
                         <div class="form-group">
                             <label for="data">Enter Data to Store:</label>
-                            <input type="number" class="form-control" id="data" name="data" th:value="${storeData}" required>
+                            <input type="number" class="form-control" id="data" name="data" min="0" placeholder="Enter data to store" th:value="${storeData}" required>
                         </div>
                         <button type="submit" class="btn btn-custom"><i class="fa fa-upload icon"></i> Store</button>
                     </form>
                 </div>
             </div>
         </div>
-
         <!-- Simulation Results Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h4>Simulation Results</h4>
-                </div>
+                <div class="card-header"><h4>Simulation Results</h4></div>
                 <div class="card-body">
                     <ul class="list-group result-list">
                         <li class="list-group-item">TLB Hit Rate: <span th:text="${tlbHit}"></span></li>
@@ -225,10 +201,8 @@
             </div>
         </div>
     </div>
-
     <!-- Memory Tables Section -->
     <div class="row">
-
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
@@ -246,13 +220,18 @@
                         </tr>
                         </thead>
                         <tbody id="tlbBody">
-                        <!-- TLB entries will be inserted here dynamically -->
+                            <tr th:each="entry : ${tlbEntries}">
+                                <td th:text="${entry.vpn}"></td>
+                                <td th:text="${entry.valid ? '1' : '0'}"></td>
+                                <td th:text="${entry.dirty ? '1' : '0'}"></td>
+                                <td th:text="${entry.ref ? '1' : '0'}"></td>
+                                <td th:text="${entry.ppn}"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
@@ -264,10 +243,14 @@
                         <tr>
                             <th>Frame</th>
                             <th>Data</th>
+                            <th>Allocated</th>
                         </tr>
                         </thead>
                         <tbody id="physicalMemoryBody">
-                        <!-- Physical memory frames will be inserted here dynamically -->
+                        <tr th:each="entry : ${physicalMemoryEntries}">
+                            <td th:text="${entry.frame}"></td>
+                            <td th:text="${entry.data}"></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -285,10 +268,15 @@
                         <tr>
                             <th>VPN</th>
                             <th>Data</th>
+                            <th>Allocated</th>
                         </tr>
                         </thead>
                         <tbody id="virtualMemoryBody">
-                        <!-- Virtual Memory entries will be inserted here dynamically -->
+                        <tr th:each="entry : ${virtualMemoryEntries}">
+                            <td th:text="${entry.vpn}"></td>
+                            <td th:text="${entry.data}"></td>
+                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -306,10 +294,15 @@
                         <tr>
                             <th>Block</th>
                             <th>Data</th>
+                            <th>Allocated</th>
                         </tr>
                         </thead>
                         <tbody id="diskBody">
-                        <!-- Disk entries will be inserted here dynamically -->
+                        <tr th:each="entry : ${diskEntries}">
+                            <td th:text="${entry.block}"></td>
+                            <td th:text="${entry.data}"></td>
+                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -333,7 +326,13 @@
                         </tr>
                         </thead>
                         <tbody id="pageTableBody">
-                        <!-- Page table entries will be inserted here dynamically -->
+                        <tr th:each="entry : ${pageTableEntries}">
+                            <td th:text="${entrypt.vpn}"></td>
+                            <td th:text="${entrypt.valid ? '1' : '0'}"></td>
+                            <td th:text="${entrypt.dirty ? '1' : '0'}"></td>
+                            <td th:text="${entrypt.ref ? '1' : '0'}"></td>
+                            <td th:text="${entrypt.ppn}"></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -345,126 +344,59 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // JavaScript to compute Virtual Memory Size based on Virtual Address Width and Page Size
-    document.getElementById('pageSize').addEventListener('input', computeVirtualMemorySize);
-    document.getElementById('virtualAddressWidth').addEventListener('input', computeVirtualMemorySize);
+    // function for virtual memory and page table size calculation
+    function updateMemoryDetails() {
+        const addressWidth = parseInt(document.getElementById('virtualAddressWidth').value) || 0;
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 1;
 
-    function computeVirtualMemorySize() {
-        const addressWidth = document.getElementById('virtualAddressWidth').value;
-        const pageSize = document.getElementById('pageSize').value;
-        if (addressWidth && pageSize) {
-            const virtualMemorySize = Math.pow(2, addressWidth);
-            document.getElementById('virtualMemorySize').innerText = virtualMemorySize.toLocaleString();
-        }
-    }
-
-    // JavaScript to compute Page Table Size based on Virtual Address Width and Page Size
-    document.getElementById('pageSize').addEventListener('input', computePageTableSize);
-    document.getElementById('virtualAddressWidth').addEventListener('input', computePageTableSize);
-
-    function computePageTableSize() {
-        const addressWidth = document.getElementById('virtualAddressWidth').value;
-        const pageSize = document.getElementById('pageSize').value;
         if (addressWidth && pageSize) {
             const virtualMemorySize = Math.pow(2, addressWidth);
             const pageTableSize = virtualMemorySize / pageSize;
+
+            document.getElementById('virtualMemorySize').innerText = virtualMemorySize.toLocaleString();
             document.getElementById('pageTableSize').innerText = pageTableSize.toLocaleString();
         }
     }
+    document.getElementById('pageSize').addEventListener('input', updateMemoryDetails);
+    document.getElementById('virtualAddressWidth').addEventListener('input', updateMemoryDetails);
 
-    // JavaScript to compute Disk Size based on Virtual Address Width, Page Size, and Physical Memory Size
-    document.getElementById('pageSize').addEventListener('input', computeDiskSize);
-    document.getElementById('virtualAddressWidth').addEventListener('input', computeDiskSize);
-    document.getElementById('physicalMemorySize').addEventListener('input', computeDiskSize);
-
-    function computeDiskSize() {
-        const addressWidth = document.getElementById('virtualAddressWidth').value;
-        const pageSize = document.getElementById('pageSize').value;
-        const mainMemorySize = document.getElementById('physicalMemorySize').value;
-
-        if (addressWidth && pageSize && mainMemorySize) {
-            const virtualMemorySize = Math.pow(2, addressWidth);
-            const totalPages = virtualMemorySize / pageSize;
-            const nrFrames = mainMemorySize / pageSize;
-            const diskSize = (totalPages - nrFrames) * pageSize;
-            document.getElementById('secondaryMemorySize').innerText = diskSize.toLocaleString();
+    function isPowerOfTwo(n) {
+        return n > 0 && (n & (n - 1)) === 0;
+    }
+    function validateInputs() {
+        const physicalMemorySize = parseInt(document.getElementById('physicalMemorySize').value) || 0;
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const diskSize = parseInt(document.getElementById('secondaryMemorySize').value) || 0;
+        const allocatePageNumber = parseInt(document.getElementById('allocatePage').value) || 0;
+        const pageTableSize = parseInt(document.getElementById('pageTableSize').value) || 0;
+        // Check if Physical Memory Size, Page Size, and Disk Size are powers of 2
+        if (!isPowerOfTwo(physicalMemorySize) || !isPowerOfTwo(pageSize) || !isPowerOfTwo(diskSize)) {
+            alert("Physical Memory Size, Page Size, and Disk Size must each be a power of 2.");
+            return false;
         }
+        // Physical Memory Size Check: Must be at least the Page Size
+        if (physicalMemorySize < pageSize) {
+            alert("Physical Memory Size must be at least as large as the Page Size.");
+            return false;
+        }
+        // Physical Memory Size Check: Should be less than Disk Size
+        if (physicalMemorySize >= diskSize) {
+            alert("Physical Memory Size should be smaller than Disk Size.");
+            return false;
+        }
+        // Check if Disk Size is at least 2x Physical Memory Size
+        if (diskSize < 2 * physicalMemorySize) {
+            alert("Disk Size must be at least twice the Physical Memory Size.");
+            return false;
+        }
+        if (allocatePageNumber > pageTableSize){
+            alert("The VPN cannot be greater than the page table size.");
+            return false;
+        }
+        return true;
     }
-
-    let pageTable = [];
-    let tlb = [];
-    let physicalMemory = [];
-    let virtualMemory = [];
-    let disk = [];
-
-    function updateTables() {
-        // Update Page Table
-        const pageTableBody = document.getElementById("pageTableBody");
-        pageTableBody.innerHTML = '';
-        pageTable.forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${entry.vpn}</td>
-            <td>${entry.valid ? '1' : '0'}</td>
-            <td>${entry.dirty ? '1' : '0'}</td>
-            <td>${entry.ref ? '1' : '0'}</td>
-            <td>${entry.ppn}</td>
-        `;
-            pageTableBody.appendChild(row);
-        });
-
-        // Update TLB
-        const tlbBody = document.getElementById("tlbBody");
-        tlbBody.innerHTML = '';
-        tlb.forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${entry.vpn}</td>
-            <td>${entry.valid ? '1' : '0'}</td>
-            <td>${entry.dirty ? '1' : '0'}</td>
-            <td>${entry.ref ? '1' : '0'}</td>
-            <td>${entry.ppn}</td>
-        `;
-            tlbBody.appendChild(row);
-        });
-
-        // Update Physical Memory
-        const physicalMemoryBody = document.getElementById("physicalMemoryBody");
-        physicalMemoryBody.innerHTML = '';
-        physicalMemory.forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${entry.frame}</td>
-            <td>${entry.data}</td>
-        `;
-            physicalMemoryBody.appendChild(row);
-        });
-
-        // Update Virtual Memory
-        const virtualMemoryBody = document.getElementById("virtualMemoryBody");
-        virtualMemoryBody.innerHTML = '';
-        virtualMemory.forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${entry.vpn}</td>
-            <td>${entry.data}</td>
-        `;
-            virtualMemoryBody.appendChild(row);
-        });
-
-        // Update Disk
-        const diskBody = document.getElementById("diskBody");
-        diskBody.innerHTML = '';
-        disk.forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${entry.block}</td>
-            <td>${entry.data}</td>
-        `;
-            diskBody.appendChild(row);
-        });
-    }
-
+    // Attach validation to form submission
+    document.querySelector('form[action="/configure"]').onsubmit = validateInputs;
 </script>
 </body>
 </html>

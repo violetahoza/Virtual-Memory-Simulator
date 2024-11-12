@@ -1,6 +1,7 @@
 package com.example.vms.model;
 
 public interface ReplacementAlgorithm {
-    int evictPage(); // this method will decide which page to evict
-    void addPage(int vpn);
+    int evictPage(); // Decide which page to evict
+    void addPage(int vpn); // Add a new page to track
+    void updatePageAccess(int vpn); // Update on page access (for algorithms like LRU)
 }

@@ -1,5 +1,7 @@
 package com.example.vms.model;
 
+import com.example.vms.utils.LogResults;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,7 +48,9 @@ public class Page {
      */
     public void checkOffsetBounds(int offset) {
         if (offset < 0 || offset >= pageSize) {
-            throw new IllegalArgumentException("Offset out of bounds.");
+            LogResults.log("Offset out of bounds.");
+            return;
+            //throw new IllegalArgumentException("Offset out of bounds.");
         }
     }
 
