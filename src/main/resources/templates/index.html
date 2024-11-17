@@ -170,9 +170,15 @@
                     </form>
                     <hr>
                     <form action="/store" method="post">
-                        <div class="form-group">
-                            <label for="storeAddress">Write to Virtual Address:</label>
-                            <input type="number" class="form-control" id="storeAddress" name="storeAddress" min="0" placeholder="Enter page number"  th:value="${storeAddress}" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="storeVPN">Write to Virtual Page:</label>
+                                <input type="number" class="form-control" id="storeVPN" name="storeVPN" min="0" placeholder="Enter page number"  th:value="${storeVPN}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="storeOffset">Write to Offset:</label>
+                                <input type="number" class="form-control" id="storeOffset" name="storeOffset" min="0" placeholder="Enter offset"  th:value="${storeOffset}" required>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="data">Enter Data to Store:</label>
@@ -243,7 +249,6 @@
                         <tr>
                             <th>Frame</th>
                             <th>Data</th>
-                            <th>Allocated</th>
                         </tr>
                         </thead>
                         <tbody id="physicalMemoryBody">
@@ -292,16 +297,14 @@
                     <table class="table table-bordered disk-table">
                         <thead>
                         <tr>
-                            <th>Block</th>
+                            <th>VPN</th>
                             <th>Data</th>
-                            <th>Allocated</th>
                         </tr>
                         </thead>
                         <tbody id="diskBody">
                         <tr th:each="entry : ${diskEntries}">
                             <td th:text="${entry.block}"></td>
                             <td th:text="${entry.data}"></td>
-                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -344,13 +347,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    function getVirtualAddressWidth() {
+        return parseInt(document.getElementById('virtualAddressWidth').value) || 0;
+    }
+    function getVirtualMemorySize() {
+        const addressWidth = getVirtualAddressWidth();
+        return Math.pow(2, addressWidth);
+    }
+    function isPowerOfTwo(n) {
+        return n > 0 && (n & (n - 1)) === 0;
+    }
+
     // function for virtual memory and page table size calculation
     function updateMemoryDetails() {
-        const addressWidth = parseInt(document.getElementById('virtualAddressWidth').value) || 0;
+        const addressWidth = getVirtualAddressWidth();
         const pageSize = parseInt(document.getElementById('pageSize').value) || 1;
 
         if (addressWidth && pageSize) {
-            const virtualMemorySize = Math.pow(2, addressWidth);
+            const virtualMemorySize = getVirtualMemorySize();
             const pageTableSize = virtualMemorySize / pageSize;
 
             document.getElementById('virtualMemorySize').innerText = virtualMemorySize.toLocaleString();
@@ -360,15 +374,11 @@
     document.getElementById('pageSize').addEventListener('input', updateMemoryDetails);
     document.getElementById('virtualAddressWidth').addEventListener('input', updateMemoryDetails);
 
-    function isPowerOfTwo(n) {
-        return n > 0 && (n & (n - 1)) === 0;
-    }
     function validateInputs() {
         const physicalMemorySize = parseInt(document.getElementById('physicalMemorySize').value) || 0;
         const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
         const diskSize = parseInt(document.getElementById('secondaryMemorySize').value) || 0;
-        const allocatePageNumber = parseInt(document.getElementById('allocatePage').value) || 0;
-        const pageTableSize = parseInt(document.getElementById('pageTableSize').value) || 0;
+
         // Check if Physical Memory Size, Page Size, and Disk Size are powers of 2
         if (!isPowerOfTwo(physicalMemorySize) || !isPowerOfTwo(pageSize) || !isPowerOfTwo(diskSize)) {
             alert("Physical Memory Size, Page Size, and Disk Size must each be a power of 2.");
@@ -389,14 +399,117 @@
             alert("Disk Size must be at least twice the Physical Memory Size.");
             return false;
         }
-        if (allocatePageNumber > pageTableSize){
-            alert("The VPN cannot be greater than the page table size.");
-            return false;
-        }
         return true;
     }
     // Attach validation to form submission
     document.querySelector('form[action="/configure"]').onsubmit = validateInputs;
+
+    function validateAllocateInput() {
+        const allocatePageNumber = parseInt(document.getElementById('allocatePage').value) || 0;
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const virtualMemorySize = getVirtualMemorySize();
+
+        if (allocatePageNumber >= (virtualMemorySize / pageSize)) {
+            alert("The VPN cannot be greater than the nr of virtual pages.");
+            return false;
+        }
+        return true;
+    }
+    document.querySelector('form[action="/allocate"]').onsubmit = validateAllocateInput;
+
+    function validateReadInput() {
+        const loadAddress = parseInt(document.getElementById('loadAddress').value) || 0;
+        const virtualMemorySize = getVirtualMemorySize();
+
+        // Check if the address to be loaded from the memory is valid
+        if (loadAddress >= virtualMemorySize) {
+            alert("The requested address does not exist! The address must be between 0 and " + (virtualMemorySize - 1));
+            return false;
+        }
+        return true;
+    }
+    document.querySelector('form[action="/load"]').onsubmit = validateReadInput;
+    function validateStoreInputs() {
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const storeVpn = parseInt(document.getElementById("storeVPN").value) || 0;
+        const storeOffset = parseInt(document.getElementById("storeOffset").value) || 0;
+        const virtualMemorySize = getVirtualMemorySize();
+        // Check if the write address is valid
+        if (storeVpn >= (virtualMemorySize / pageSize)) {
+            alert("The VPN cannot be greater than the nr of virtual pages.");
+            return false;
+        }
+        if (storeOffset >= pageSize) {
+            alert("The offset cannot be greater than the page size.");
+            return false;
+        }
+        return true;
+    }
+    document.querySelector('form[action="/store"]').onsubmit = validateStoreInputs;
+
+    setInterval(() => {
+        fetch('/memoryData')
+            .then(response => response.json())
+            .then(data => {
+                // Update TLB
+                const tlbBody = document.getElementById('tlbBody');
+                tlbBody.innerHTML = '';
+                data.tlbEntries.forEach(entry => {
+                    tlbBody.innerHTML += `<tr>
+                    <td>${entry.vpn}</td>
+                    <td>${entry.valid ? '1' : '0'}</td>
+                    <td>${entry.dirty ? '1' : '0'}</td>
+                    <td>${entry.ref ? '1' : '0'}</td>
+                    <td>${entry.ppn}</td>
+                </tr>`;
+                });
+
+                // Update Physical Memory
+                const physicalMemoryBody = document.getElementById('physicalMemoryBody');
+                physicalMemoryBody.innerHTML = '';
+                data.physicalMemoryEntries.forEach(entry => {
+                    physicalMemoryBody.innerHTML += `<tr>
+                    <td>${entry.frame}</td>
+                    <td>${entry.data}</td>
+                </tr>`;
+                });
+
+                // Update Virtual Memory
+                const virtualMemoryBody = document.getElementById('virtualMemoryBody');
+                virtualMemoryBody.innerHTML = '';
+                data.virtualMemoryEntries.forEach(entry => {
+                    virtualMemoryBody.innerHTML += `<tr>
+                    <td>${entry.vpn}</td>
+                    <td>${entry.data}</td>
+                    <td>${entry.allocated ? 'Yes' : 'No'}</td>
+                </tr>`;
+                });
+
+                // Update Disk
+                const diskBody = document.getElementById('diskBody');
+                diskBody.innerHTML = '';
+                data.diskEntries.forEach(entry => {
+                    diskBody.innerHTML += `<tr>
+                    <td>${entry.block}</td>
+                    <td>${entry.data}</td>
+                </tr>`;
+                });
+
+                // Update Page Table
+                const pageTableBody = document.getElementById('pageTableBody');
+                pageTableBody.innerHTML = '';
+                data.pageTableEntries.forEach(entry => {
+                    pageTableBody.innerHTML += `<tr>
+                    <td>${entry.vpn}</td>
+                    <td>${entry.valid ? '1' : '0'}</td>
+                    <td>${entry.dirty ? '1' : '0'}</td>
+                    <td>${entry.ref ? '1' : '0'}</td>
+                    <td>${entry.ppn}</td>
+                </tr>`;
+                });
+            })
+            .catch(error => console.error('Error fetching memory data:', error));
+    }, 5000); // Refresh every 5 seconds
 </script>
 </body>
 </html>

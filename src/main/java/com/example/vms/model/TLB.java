@@ -27,23 +27,6 @@ public class TLB {
     }
 
     /**
-     * Retrieves the page table entry for a given VPN if it exists and is valid.
-     * @param vpn The virtual page number (VPN).
-     * @return The corresponding page table entry, or null if not found or invalid.
-     */
-    public PageTableEntry getEntry(int vpn) {
-        PageTableEntry entry = entries.get(vpn);
-        if (entry != null && entry.isValid()) {
-            entry.setRefBit(true); // Mark the entry as referenced
-            evictionAlgorithm.updatePageAccess(vpn); // Update the eviction algorithm state
-            //LogResults.log("TLB hit for VPN " + vpn + ": " + entry);
-            return entry;
-        }
-        //LogResults.log("TLB miss for VPN " + vpn);
-        return null;
-    }
-
-    /**
      * Adds a new entry to the TLB. Evicts an entry if necessary based on the eviction algorithm.
      * @param vpn The virtual page number (VPN).
      * @param entry The page table entry to add.
@@ -52,7 +35,9 @@ public class TLB {
         // Evict an entry if the TLB is full
         if (isFull()) {
             int evictedVpn = evictionAlgorithm.evictPage();
-            entries.remove(evictedVpn); // Remove the evicted entry from the TLB
+            if (entries.containsKey(evictedVpn)) {
+                entries.remove(evictedVpn); // Remove the evicted entry from the TLB
+            }
             //LogResults.log("Evicted VPN " + evictedVpn + " from TLB based on eviction algorithm");
         }
         // Add the new entry
@@ -69,6 +54,7 @@ public class TLB {
     public int lookup(int vpn) {
         PageTableEntry entry = entries.get(vpn);
         if (entry != null && entry.isValid()) {
+            evictionAlgorithm.updatePageAccess(vpn); // Update LRU for the accessed VPN
             entry.setRefBit(true); // Set the reference bit
             //LogResults.log("TLB hit for VPN " + vpn + ": Frame " + entry.getFrameNumber());
             return entry.getFrameNumber(); // TLB hit
@@ -103,7 +89,7 @@ public class TLB {
      */
     public boolean isFull() {
         boolean full = entries.size() == maxSize;
-        LogResults.log("TLB full: " + full);
+        //LogResults.log("TLB full: " + full);
         return full;
     }
 
@@ -202,6 +188,17 @@ public class TLB {
     }
 
     /**
+     * Prints the current contents of the TLB to the log.
+     */
+    public void printContents() {
+        LogResults.log("TLB contents:\n----------------------");
+        for (Map.Entry<Integer, PageTableEntry> e : entries.entrySet()) {
+            LogResults.log(e.getKey() + ": " + e.getValue());
+        }
+        LogResults.log("----------------------");
+    }
+
+    /**
      * Provides a copy of the current TLB contents, to avoid direct modification of the internal structure.
      * @return A map representing the TLB contents.
      */
@@ -214,15 +211,20 @@ public class TLB {
         //LogResults.log("Copied TLB contents");
         return tlbCopy;
     }
-
     /**
-     * Prints the current contents of the TLB to the log.
-     */
-    public void printContents() {
-        LogResults.log("TLB contents:\n----------------------");
-        for (Map.Entry<Integer, PageTableEntry> e : entries.entrySet()) {
-            LogResults.log(e.getKey() + ": " + e.getValue());
+     //     * Retrieves the page table entry for a given VPN if it exists and is valid.
+     //     * @param vpn The virtual page number (VPN).
+     //     * @return The corresponding page table entry, or null if not found or invalid.
+     //     */
+    public PageTableEntry getEntry(int vpn) {
+        PageTableEntry entry = entries.get(vpn);
+        if (entry != null && entry.isValid()) {
+            entry.setRefBit(true); // Mark the entry as referenced
+            evictionAlgorithm.updatePageAccess(vpn); // Update the eviction algorithm state
+            //LogResults.log("TLB hit for VPN " + vpn + ": " + entry);
+            return entry;
         }
-        LogResults.log("----------------------");
+        //LogResults.log("TLB miss for VPN " + vpn);
+        return null;
     }
 }

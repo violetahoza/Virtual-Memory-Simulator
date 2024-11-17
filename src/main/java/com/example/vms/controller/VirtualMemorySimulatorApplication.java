@@ -6,7 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class VirtualMemorySimulatorApplication {
     public static void main(String[] args) {
-//        int tlbSize = 4;
+        SpringApplication.run(VirtualMemorySimulatorApplication.class, args);
+        //        int tlbSize = 4;
 //        int physicalMemorySize = 128;
 //        int diskSize = 256;
 //        int pageSize = 16;
@@ -64,7 +65,5 @@ public class VirtualMemorySimulatorApplication {
 //        }
 //
 //        scanner.close();
-
-        SpringApplication.run(VirtualMemorySimulatorApplication.class, args);
     }
 }

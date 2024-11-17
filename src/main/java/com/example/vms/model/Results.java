@@ -1,5 +1,7 @@
 package com.example.vms.model;
 
+import com.example.vms.utils.LogResults;
+
 /**
  * Results class is responsible for tracking various statistics related to TLB and page table operations.
  * This includes hits, misses, disk accesses, and eviction events.
@@ -64,13 +66,14 @@ public class Results {
      * Logs the current statistics
      */
     public static void logStats() {
-        // For example, you can use a logging mechanism here
-        System.out.println("TLB Hit Rate: " + getTLBHitRate() + "%");
-        System.out.println("TLB Miss Rate: " + getTLBMissRate() + "%");
-        System.out.println("Page Table Hit Rate: " + getPageTableHitRate() + "%");
-        System.out.println("Page Table Miss Rate: " + getPageTableMissRate() + "%");
-        System.out.println("Disk Reads: " + diskRead);
-        System.out.println("Disk Writes: " + diskWrite);
-        System.out.println("Page Evictions: " + pageEviction);
+        LogResults.log("\nTLB Hits: " + Results.tlbHit + " TlB Misses: " + Results.tlbMiss + " TLB Accesses: " + Results.tlbAccesses);
+        LogResults.log("Page table hits: " + Results.pageTableHit + " Page table misses: " + Results.pageTableMiss + " Page table accesses: " + Results.pageTableAccesses);
+        LogResults.log("TLB Hit Rate: " + getTLBHitRate() + "%");
+        LogResults.log("TLB Miss Rate: " + getTLBMissRate() + "%");
+        LogResults.log("Page Table Hit Rate: " + getPageTableHitRate() + "%");
+        LogResults.log("Page Table Miss Rate: " + getPageTableMissRate() + "%");
+        LogResults.log("Disk Reads: " + diskRead);
+        LogResults.log("Disk Writes: " + diskWrite);
+        LogResults.log("Page Evictions: " + pageEviction + '\n');
     }
 }

@@ -16,6 +16,7 @@ public class MainMemory {
     private int nrFrames;              // Total number of frames in memory
     private int lastFrameNr;           // Tracks the next available frame
     private int pageSize;              // Size of each page
+    private Map<Integer, Integer> frameToVirtualPageMap; // Maps frame numbers to virtual page numbers
 
     /**
      * Constructs a new instance of MainMemory.
@@ -26,6 +27,7 @@ public class MainMemory {
     public MainMemory(int nrFrames, int pageSize) {
         this.nrFrames = nrFrames;
         this.pageSize = pageSize;
+        this.frameToVirtualPageMap = new HashMap<>(); // Initialize frame-to-virtual page map
         this.memory = new HashMap<>(); // Start with an empty memory (no pages loaded)
         for (int i = 0; i < nrFrames; i++) {
             memory.put(i, new Page(pageSize)); // initialize memory
@@ -76,13 +78,14 @@ public class MainMemory {
      * @param page The page to be loaded into memory.
      * @param frameNr The frame number in which the page will be stored.
      */
-    public void loadPageIntoMemory(Page page, int frameNr) {
+    public void loadPageIntoMemory(Page page, int frameNr, int vpn) {
         //LogResults.log("Loading page into frame number: " + frameNr);
         if (frameNr < 0 || frameNr >= nrFrames) {
             LogResults.log("Invalid frame number specified for loading page: " + frameNr);
             return;
         }
         memory.put(frameNr, page.getCopy());
+        frameToVirtualPageMap.put(frameNr, vpn);
         lastFrameNr = Math.max(lastFrameNr, frameNr + 1); // Update last used frame if necessary
         LogResults.log("Page successfully loaded into frame " + frameNr);
     }
@@ -102,27 +105,6 @@ public class MainMemory {
         LogResults.log("No available frames found.");
         return -1; // Should not reach here if memory is not full
     }
-
-    /**
-     * Creates a copy of a given page.
-     * @param page The page to be copied.
-     * @return A copy of the given page.
-     */
-    public Page pageCopy(Page page) {
-        LogResults.log("Creating a copy of the page.");
-        return page.getCopy();
-    }
-
-//    /**
-//     * Brings a page to memory at a specific frame number.
-//     * @param page The page to be placed in memory.
-//     * @param frameNr The frame number where the page will be placed.
-//     */
-//    public void bringPageToMemory(Page page, int frameNr) {
-//        // LogResults.log("Bringing page to memory at frame number " + frameNr);
-//        memory.put(frameNr, pageCopy(page));
-//        LogResults.log("Page successfully placed in memory frame " + frameNr);
-//    }
 
     /**
      * Removes a page from memory at a specific frame number.
@@ -157,7 +139,6 @@ public class MainMemory {
         LogResults.log("Retrieving page at frame number: " + frameNr);
         return memory.get(frameNr);
     }
-
     /**
      * Retrieves all pages from memory.
      * @return A map of all pages in memory, with frame numbers as keys.
@@ -166,54 +147,55 @@ public class MainMemory {
         //LogResults.log("Retrieving all pages from memory.");
         return memory;
     }
-
-    /**
-     * Retrieves the full memory contents, mapping frame numbers to virtual addresses and their associated data.
-     * @return A map of memory contents, with frame numbers as keys and addresses as the values.
-     */
-    public Map<Integer, Map<Integer, Integer>> getMemoryContents() {
-        //LogResults.log("Retrieving full memory contents.");
-        Map<Integer, Map<Integer, Integer>> memoryCopy = new HashMap<>();
-        for (Map.Entry<Integer, Page> entry : memory.entrySet()) {
-            int frameNumber = entry.getKey();
-            Page page = entry.getValue();
-            Map<Integer, Integer> pageContents = page.getPageContents();
-            Map<Integer, Integer> addressContents = new HashMap<>();
-
-            // Convert page contents to physical addresses
-            for (Map.Entry<Integer, Integer> pageEntry : pageContents.entrySet()) {
-                int offset = pageEntry.getKey();
-                int address = frameNumber * pageSize + offset;
-                addressContents.put(address, pageEntry.getValue());
-            }
-            memoryCopy.put(frameNumber, addressContents);
-        }
-        return memoryCopy;
-    }
-
-    /**
-     * Prints the contents of a specific page in memory.
-     * @param frameNumber The frame number of the page whose contents are to be printed.
-     */
-    public void printPageContents(int frameNumber) {
-        LogResults.log("Printing contents of page at frame number: " + frameNumber);
-        memory.get(frameNumber).printContents();
-    }
-
     /**
      * Prints all memory contents.
      * Logs the current memory status, including each frame and its contents.
      */
     public void printContents() {
-       // LogResults.log("Printing all memory contents:");
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.append("Main memory contents (size: ").append(memory.size()).append("):\n");
 
         for (Map.Entry<Integer, Page> entry : memory.entrySet()) {
-            logBuilder.append("Frame ").append(entry.getKey()).append(":\n");
-            logBuilder.append(entry.getValue().printContents());
+            int frameNumber = entry.getKey();
+            int virtualPageNumber = frameToVirtualPageMap.getOrDefault(frameNumber, -1); // Retrieve virtual page number
+            logBuilder.append("Frame ").append(frameNumber).append(" (Virtual Page ").append(virtualPageNumber).append("):\n");
+            logBuilder.append(entry.getValue().printContents()).append("\n");
         }
         logBuilder.append("----------------------");
         LogResults.log(logBuilder.toString());
     }
+
+//    /**
+//     * Creates a copy of a given page.
+//     * @param page The page to be copied.
+//     * @return A copy of the given page.
+//     */
+//    public Page pageCopy(Page page) {
+//        LogResults.log("Creating a copy of the page.");
+//        return page.getCopy();
+//    }
+
+//    /**
+//     * Retrieves the full memory contents, mapping frame numbers to virtual addresses and their associated data.
+//     * @return A map of memory contents, with frame numbers as keys and addresses as the values.
+//     */
+//    public Map<Integer, Map<Integer, Integer>> getMemoryContents() {
+//        //LogResults.log("Retrieving full memory contents.");
+//        Map<Integer, Map<Integer, Integer>> memoryCopy = new HashMap<>();
+//        for (Map.Entry<Integer, Page> entry : memory.entrySet()) {
+//            int frameNumber = entry.getKey();
+//            Page page = entry.getValue();
+//            Map<Integer, Integer> pageContents = page.getPageContents();
+//            Map<Integer, Integer> addressContents = new HashMap<>();
+//
+//            // Convert page contents to physical addresses
+//            for (Map.Entry<Integer, Integer> pageEntry : pageContents.entrySet()) {
+//                int offset = pageEntry.getKey();
+//                int address = frameNumber * pageSize + offset;
+//                addressContents.put(address, pageEntry.getValue());
+//            }
+//            memoryCopy.put(frameNumber, addressContents);
+//        }
+//        return memoryCopy;
+//    }
 }

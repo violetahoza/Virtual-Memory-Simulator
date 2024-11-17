@@ -42,7 +42,7 @@ public class LRUReplacement implements ReplacementAlgorithm {
     @Override
     public void addPage(int vpn) {
         updatePageAccess(vpn);
-        LogResults.log("Added or updated page with VPN " + vpn);
+        // LogResults.log("Added page with VPN " + vpn);
     }
 
     @Override

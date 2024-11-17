@@ -2,6 +2,11 @@ package com.example.vms.model;
 
 import com.example.vms.utils.LogResults;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Manages virtual memory by simulating the interaction between TLB (Translation Lookaside Buffer),
  * page table, main memory, secondary storage, and the page replacement algorithm. It handles page
@@ -14,6 +19,8 @@ public class MemoryManager {
     private SecondaryStorage secondaryStorage;
     private ReplacementAlgorithm replacementAlgorithm;
     private int pageSize, virtualAddressWidth, virtualMemorySize;
+    private int operationCount; // Counter for memory operations
+    private static final int RESET_INTERVAL = 10; // Reset every 10 operations
 
     /**
      * Constructs the MemoryManager with the provided memory configurations.
@@ -40,6 +47,7 @@ public class MemoryManager {
         this.tlb = new TLB(tlbSize, replacementAlgorithm);
         this.mainMemory = new MainMemory(physicalMemorySize / pageSize, pageSize);
         this.secondaryStorage = new SecondaryStorage(diskSize / pageSize, pageSize);
+        this.operationCount = 0;
         //LogResults.log("MemoryManager initialized with given configuration.");
     }
 
@@ -88,14 +96,16 @@ public class MemoryManager {
             PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true); // Frame number -1 to indicate disk
             //pageTable.getEntries().add(vpn, diskEntry); // Directly use the internal map to update the entry
             pageTable.addEntryOnDisk(vpn, diskEntry);
+            pageTable.setDiskPage(vpn, true);
             return;
         }
 
         Page page = new Page(pageSize); // Create a new page and bring it into the unmapped frame
-        mainMemory.loadPageIntoMemory(page, unmappedFrame); // Load the page into the unmapped frame
-        //secondaryStorage.store(vpn, page); // Store a backup copy of the page in secondary storage
-        // pageTable.setDiskPage(unmappedFrame, true);
-        // LogResults.log("\nStored a copy of VPN " + vpn + " in secondary storage.");
+        mainMemory.loadPageIntoMemory(page, unmappedFrame, vpn); // Load the page into the unmapped frame
+        replacementAlgorithm.addPage(vpn);
+        secondaryStorage.store(vpn, page); // Store a backup copy of the page in secondary storage
+        pageTable.setDiskPage(unmappedFrame, true);
+        LogResults.log("\nStored a copy of VPN " + vpn + " in secondary storage.");
         pageTable.addEntry(vpn, unmappedFrame); // Update the page table to map the VPN to the unmapped frame
         LogResults.log("Mapped VPN " + vpn + " to frame " + unmappedFrame + " in main memory.\n");
     }
@@ -115,19 +125,22 @@ public class MemoryManager {
         int offset = virtualAddress % pageSize;
 
         Address virtualAddr = new Address(vpn, offset);
-        LogResults.log("\nAccess request for virtual address: " + virtualAddr.printAddress("Virtual"));
+        LogResults.log("\nAccess request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
 
         int ppn = tlb.lookup(vpn); // TLB lookup
+        Results.tlbAccesses++;
         if (ppn != -1) {
             LogResults.log("TLB hit! Physical page number: " + ppn);
             Results.tlbHit++;
             loadFromMemory(new Address(ppn, offset));
+            incrementOperationCount(); // Increment operation count after a load
             return;
         }
 
         LogResults.log("TLB miss for virtual page nr: " + vpn);
         Results.tlbMiss++;
         handlePageTableLookup(vpn, offset);
+        incrementOperationCount(); // Increment operation count after a load
     }
 
     /**
@@ -138,11 +151,12 @@ public class MemoryManager {
      */
     private void handlePageTableLookup(int vpn, int offset) {
         PageTableEntry entry = pageTable.getEntry(vpn);
+        Results.pageTableAccesses++;
         if (entry != null) {
             LogResults.log("Page table hit! Physical page number: " + entry.getFrameNumber() + " for virtual page number: " + vpn + '\n');
             Results.pageTableHit++;
             tlb.addEntry(vpn, entry);
-            replacementAlgorithm.addPage(vpn);
+            //replacementAlgorithm.addPage(vpn);
             loadFromMemory(new Address(entry.getFrameNumber(), offset));
             return;
         }
@@ -169,19 +183,22 @@ public class MemoryManager {
         int vpn = virtualAddress / pageSize;
         int offset = virtualAddress % pageSize;
         Address virtualAddr = new Address(vpn, offset);
-        LogResults.log("\nStore request for virtual address: " + virtualAddr.printAddress("Virtual"));
+        LogResults.log("\nStore request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
 
         int ppn = tlb.lookup(vpn); // TLB lookup
+        Results.tlbAccesses++;
         if (ppn != -1) {
             LogResults.log("TLB hit! Physical page number: " + ppn);
             Results.tlbHit++;
             storeToMemory(new Address(ppn, offset), data);
+            incrementOperationCount(); // Increment operation count after a load
             return;
         }
 
         LogResults.log("TLB miss for virtual page number: " + vpn);
         Results.tlbMiss++;
         handlePageTableLookupForStore(vpn, offset, data);
+        incrementOperationCount(); // Increment operation count after a load
     }
 
     /**
@@ -192,11 +209,13 @@ public class MemoryManager {
      * @param data The data to be stored.
      */
     private void handlePageTableLookupForStore(int vpn, int offset, int data) {
+        Results.pageTableAccesses++;
         PageTableEntry entry = pageTable.getEntry(vpn);
         if (entry != null) {
             LogResults.log("Page table hit! Physical page number: " + entry.getFrameNumber() + " for virtual page number: " + vpn);
             Results.pageTableHit++;
             tlb.addEntry(vpn, entry);
+            replacementAlgorithm.updatePageAccess(vpn); // Update LRU on page table hit
             storeToMemory(new Address(entry.getFrameNumber(), offset), data);
             return;
         }
@@ -238,11 +257,11 @@ public class MemoryManager {
         }
 
         // Step 3: Load page into the chosen frame
-        mainMemory.loadPageIntoMemory(page, frameToUse);
-
+        mainMemory.loadPageIntoMemory(page, frameToUse, vpn);
+        //secondaryStorage.removePage(vpn);
         // Step 4: Update page table and TLB with the new frame mapping
         pageTable.addEntry(vpn, frameToUse);
-        //pageTable.setDiskPage(vpn, true);
+        pageTable.setDiskPage(vpn, true);
         PageTableEntry newEntry = pageTable.getEntry(vpn);
         tlb.addEntry(vpn, newEntry);
         replacementAlgorithm.addPage(vpn);
@@ -310,6 +329,34 @@ public class MemoryManager {
             replacementAlgorithm.updatePageAccess(physicalAddress.getPageNumber());
         }
         LogResults.log("Stored data: " + data + " to: " + physicalAddress.printAddress("Physical") + '\n');
+    }
+
+    /**
+     * Increments the operation count and resets NRU referenced bits if the threshold is reached.
+     */
+    private void incrementOperationCount() {
+        operationCount++;
+        if (operationCount >= RESET_INTERVAL) {
+            resetNRUBits(); // Reset referenced bits periodically
+            operationCount = 0; // Reset the counter
+        }
+    }
+
+    /**
+     * Resets the referenced bits in the NRU replacement algorithm, if applicable.
+     */
+    public void resetNRUBits() {
+        if (replacementAlgorithm instanceof NRUReplacement) {
+            ((NRUReplacement) replacementAlgorithm).resetReferencedBits();
+            LogResults.log("Reset referenced bits for NRU algorithm.");
+        }
+    }
+
+    public void setFutureReferences(Map<Integer, List<Integer>> futureReferences) {
+        if (replacementAlgorithm instanceof OptimalReplacement) {
+            ((OptimalReplacement) replacementAlgorithm).setFutureReferences(futureReferences);
+            LogResults.log("Future references set for optimal replacement.");
+        }
     }
 
     /**

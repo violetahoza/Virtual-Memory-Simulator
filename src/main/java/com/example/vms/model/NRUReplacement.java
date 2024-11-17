@@ -43,11 +43,9 @@ public class NRUReplacement implements ReplacementAlgorithm {
             LogResults.log("No pages to evict.");
             return -1; // Return -1 to indicate no page to evict
         }
-
         // Try to find pages in each class (0-3) based on R and M bits
         for (int classNum = 0; classNum < 4; classNum++) {
             List<Integer> classPages = new ArrayList<>();
-
             for (int vpn : activePages) {
                 PageTableEntry entry = pageTable.getEntry(vpn);
                 if (entry != null) {
@@ -57,7 +55,6 @@ public class NRUReplacement implements ReplacementAlgorithm {
                     }
                 }
             }
-
             if (!classPages.isEmpty()) {
                 // Randomly select a victim from the class
                 int victimIndex = random.nextInt(classPages.size());
@@ -66,8 +63,8 @@ public class NRUReplacement implements ReplacementAlgorithm {
                 LogResults.log("Evicted page with VPN " + victimVpn + " from class " + classNum);
                 return victimVpn; // Return the VPN of the evicted page
             }
+            LogResults.log("No pages found in class " + classNum + ".");
         }
-
         // If no pages found in any class, pick a random page
         int randomIndex = random.nextInt(activePages.size());
         int victimVpn = activePages.get(randomIndex);
@@ -78,10 +75,10 @@ public class NRUReplacement implements ReplacementAlgorithm {
 
     /**
      * Determines the class of a page based on its R (referenced) and M (modified) bits.
-     * Class 0: Not referenced, Not modified
+     * Class 0: Not referenced, Not modified -> highest priority for eviction
      * Class 1: Not referenced, Modified
      * Class 2: Referenced, Not modified
-     * Class 3: Referenced, Modified
+     * Class 3: Referenced, Modified -> lowest priority for eviction
      *
      * @param entry The page table entry representing the page.
      * @return The class of the page (0-3).
@@ -119,5 +116,18 @@ public class NRUReplacement implements ReplacementAlgorithm {
             entry.setRefBit(true);
             // LogResults.log("Updated referenced bit for VPN " + vpn);
         }
+    }
+
+    /**
+     * Periodically reset referenced bits to maintain proper NRU behavior.
+     */
+    public void resetReferencedBits() {
+        for (int vpn : activePages) {
+            PageTableEntry entry = pageTable.getEntry(vpn);
+            if (entry != null) {
+                entry.setRefBit(false); // Reset the referenced bit
+            }
+        }
+        LogResults.log("Reset referenced bits for all active pages.");
     }
 }

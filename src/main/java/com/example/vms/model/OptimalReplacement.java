@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class OptimalReplacement implements ReplacementAlgorithm {
     private final Map<Integer, List<Integer>> futureReferences;  // Future memory access pattern for each page
-    private final Map<Integer, Integer> activePages;              // Active pages and the current step at which they were last accessed
-    private int currentStep;                                      // The current simulation step (used to track page accesses)
+    private final Map<Integer, Integer> activePages; // Active pages and the current step at which they were last accessed
+    private int currentStep; // The current simulation step (used to track page accesses)
 
     /**
      * Constructs the OptimalReplacement algorithm with initial values.
@@ -74,7 +74,9 @@ public class OptimalReplacement implements ReplacementAlgorithm {
             return victimVpn;
         }
 
-        throw new IllegalStateException("Failed to select a page for eviction.");
+        //throw new IllegalStateException("Failed to select a page for eviction.");
+        LogResults.log("Failed to select a page for eviction.");
+        return -1;
     }
 
     /**
@@ -86,14 +88,11 @@ public class OptimalReplacement implements ReplacementAlgorithm {
      * @return The next step the page will be accessed, or Integer.MAX_VALUE if it won't be accessed.
      */
     private int getNextUse(List<Integer> accessTimes, int currentStep) {
-        if (accessTimes == null) {
-            return Integer.MAX_VALUE;  // If no future access, return maximum value (not used again)
-        }
-        // Find the first access time that is later than the current step
+        // Return the first access time after the current step, or MAX_VALUE if none
         return accessTimes.stream()
                 .filter(time -> time > currentStep)
                 .findFirst()
-                .orElse(Integer.MAX_VALUE);  // If no future access, return MAX_VALUE
+                .orElse(Integer.MAX_VALUE);
     }
 
     /**

@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Controller that manages the simulation of a virtual memory system, including page replacement algorithms,
  * memory management, and simulation state reset.
@@ -54,8 +59,14 @@ public class MemoryController {
                 break;
             case "NRU":
                 algorithm = new NRUReplacement(pageTable);
+                break;
             case "Optimal":
                 algorithm = new OptimalReplacement();
+                Map<Integer, List<Integer>> futureReferences = new HashMap<>();
+                futureReferences.put(0, Arrays.asList(3, 8, 15)); // VPN 0 is accessed at steps 3, 8, and 15
+                futureReferences.put(1, Arrays.asList(5, 10, 20)); // VPN 1 is accessed at steps 5, 10, and 20
+                futureReferences.put(2, Arrays.asList(1, 4, 7));
+                memoryManager.setFutureReferences(futureReferences);
                 break;
             case "FIFO":
             default:
@@ -119,16 +130,22 @@ public class MemoryController {
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);
 
+        // Memory data
+//        model.addAttribute("tlbEntries", memoryManager.getTLBEntries());
+//        model.addAttribute("physicalMemoryEntries", memoryManager.getPhysicalMemoryEntries());
+//        model.addAttribute("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
+//        model.addAttribute("diskEntries", memoryManager.getDiskEntries());
+//        model.addAttribute("pageTableEntries", memoryManager.getPageTableEntries());
+
         // Add default values for attributes that might not be set yet
-        if (!model.containsAttribute("loadAddress")) {
+        if (!model.containsAttribute("loadAddress"))
             model.addAttribute("loadAddress", 0);
-        }
-        if (!model.containsAttribute("storeAddress")) {
-            model.addAttribute("storeAddress", 0);
-        }
-        if (!model.containsAttribute("storeData")) {
+        if (!model.containsAttribute("storeOffset"))
+            model.addAttribute("storeOffset", 0);
+        if (!model.containsAttribute("storeVPN"))
+            model.addAttribute("storeVPN", 0);
+        if (!model.containsAttribute("storeData"))
             model.addAttribute("storeData", 0);
-        }
 
         return "index";
     }
@@ -193,18 +210,21 @@ public class MemoryController {
 
     /**
      * Simulates storing data at a specified virtual address.
-     * @param address the address to store data at
+     * @param vpn the virtual page number to store data at
+     * @param offset the offset in the page to store data in
      * @param data the data to store
      * @param model the model to add attributes to for the view
      * @return the view name to redirect to
      */
     @PostMapping("/store")
-    public String storeAddress(@RequestParam("storeAddress") int address, @RequestParam("data") int data, Model model) {
+    public String storeAddress(@RequestParam("storeVPN") int vpn, @RequestParam("storeOffset") int offset, @RequestParam("data") int data, Model model) {
         // Simulate storing the data at the given address
+        int address = vpn * pageSize + offset;
         memoryManager.store(address, data);
 
         // Add the address and data to the model to display
-        model.addAttribute("storeAddress", address);
+        model.addAttribute("storeVPN", vpn);
+        model.addAttribute("storeOffset", offset);
         model.addAttribute("storeData", data);
         //LogResults.log("Stored data " + data + " at address: " + address);
         return "redirect:/";
@@ -238,7 +258,7 @@ public class MemoryController {
     public String resetSimulation(Model model, SessionStatus status, RedirectAttributes redirectAttributes) {
         // Print memory contents for debugging purposes
         memoryManager.printMemoryContents();
-
+        Results.logStats();
         // Reset the results and memory manager state
         Results.reset();
         memoryManager = new MemoryManager();
@@ -262,7 +282,8 @@ public class MemoryController {
         model.addAttribute("secondaryMemorySize", secondaryMemorySize);
         model.addAttribute("replacementAlgorithm", "FIFO");
         model.addAttribute("loadAddress", 0);
-        model.addAttribute("storeAddress", 0);
+        model.addAttribute("storeVPN", 0);
+        model.addAttribute("storeOffset", 0);
         model.addAttribute("storeData", 0);
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);
@@ -274,4 +295,16 @@ public class MemoryController {
         // Redirect to the home page after resetting
         return "redirect:/";
     }
+
+//    @GetMapping("/memoryData")
+//    @ResponseBody
+//    public Map<String, Object> getMemoryData() {
+//        Map<String, Object> data = new HashMap<>();
+//        data.put("tlbEntries", memoryManager.getTLBEntries());
+//        data.put("physicalMemoryEntries", memoryManager.getPhysicalMemoryEntries());
+//        data.put("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
+//        data.put("diskEntries", memoryManager.getDiskEntries());
+//        data.put("pageTableEntries", memoryManager.getPageTableEntries());
+//        return data;
+//    }
 }
