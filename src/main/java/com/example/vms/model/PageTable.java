@@ -248,7 +248,10 @@ public class PageTable {
         //LogResults.log("Page table copied."); // Log copying action
         return pageTableCopy;
     }
-
+    public void setPPN(int vpn, int ppn) {
+        PageTableEntry entry = pageTable.get(vpn);
+        entry.setFrameNumber(ppn);
+    }
     /**
      * Prints the current contents of the page table to the log.
      */

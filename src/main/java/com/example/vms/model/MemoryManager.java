@@ -298,6 +298,7 @@ public class MemoryManager {
         pageTable.setValid(victimVpn, false);
         pageTable.setDirty(victimVpn, false);
         pageTable.setReferenced(victimVpn, false);
+        pageTable.setPPN(victimVpn, -1);
         tlb.removeEntry(victimVpn);
         Results.pageEviction++;
         return victimFrame;
