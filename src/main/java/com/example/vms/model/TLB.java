@@ -38,12 +38,12 @@ public class TLB {
             if (entries.containsKey(evictedVpn)) {
                 entries.remove(evictedVpn); // Remove the evicted entry from the TLB
             }
-            //LogResults.log("Evicted VPN " + evictedVpn + " from TLB based on eviction algorithm");
+            LogResults.log("Evicted VPN " + evictedVpn + " from TLB based on eviction algorithm");
         }
         // Add the new entry
         entries.put(vpn, new PageTableEntry(entry.getFrameNumber(), entry.isValid(), entry.isDirty(), entry.isReferenced(), entry.isDiskPage()));
         evictionAlgorithm.addPage(vpn); // Add the page to the eviction algorithm
-        //LogResults.log("Added VPN " + vpn + " to TLB: " + entry);
+        LogResults.log("Added VPN " + vpn + " to TLB: " + entry);
     }
 
     /**
@@ -73,17 +73,6 @@ public class TLB {
     }
 
     /**
-     * Checks if a given VPN is present in the TLB.
-     * @param vpn The virtual page number (VPN).
-     * @return True if the VPN is present, false otherwise.
-     */
-    public boolean containsEntry(int vpn) {
-        boolean contains = entries.containsKey(vpn);
-        LogResults.log("TLB contains VPN " + vpn + ": " + contains);
-        return contains;
-    }
-
-    /**
      * Checks if the TLB is full.
      * @return True if the TLB is full, false otherwise.
      */
@@ -91,100 +80,6 @@ public class TLB {
         boolean full = entries.size() == maxSize;
         //LogResults.log("TLB full: " + full);
         return full;
-    }
-
-    /**
-     * Checks if the page entry for the given VPN is dirty (modified).
-     * @param vpn The virtual page number (VPN).
-     * @return True if the page is dirty, false otherwise.
-     */
-    public boolean isDirty(int vpn) {
-        PageTableEntry entry = entries.get(vpn);
-        boolean dirty = entry != null && entry.isDirty();
-        //LogResults.log("VPN " + vpn + " dirty: " + dirty);
-        return dirty;
-    }
-
-    /**
-     * Checks if the page entry for the given VPN has been referenced.
-     * @param vpn The virtual page number (VPN).
-     * @return True if the page has been referenced, false otherwise.
-     */
-    public boolean isReferenced(int vpn) {
-        PageTableEntry entry = entries.get(vpn);
-        boolean referenced = entry != null && entry.isReferenced();
-        //LogResults.log("VPN " + vpn + " referenced: " + referenced);
-        return referenced;
-    }
-
-    /**
-     * Checks if the page entry for the given VPN is valid.
-     * @param vpn The virtual page number (VPN).
-     * @return True if the page is valid, false otherwise.
-     */
-    public boolean isValid(int vpn) {
-        PageTableEntry entry = entries.get(vpn);
-        boolean valid = entry != null && entry.isValid();
-        //LogResults.log("VPN " + vpn + " valid: " + valid);
-        return valid;
-    }
-
-    /**
-     * Finds the corresponding VPN for a given physical page number (PPN).
-     * @param ppn The physical page number (PPN).
-     * @return The corresponding VPN, or -1 if not found.
-     */
-    public int getCorrespondingVPN(int ppn) {
-        for (Map.Entry<Integer, PageTableEntry> entry : entries.entrySet()) {
-            if (entry.getValue().getFrameNumber() == ppn) {
-                LogResults.log("Found corresponding VPN for PPN " + ppn + ": " + entry.getKey());
-                return entry.getKey();
-            }
-        }
-        LogResults.log("No corresponding VPN found for PPN " + ppn);
-        return -1;
-    }
-
-    /**
-     * Sets the dirty bit for a given VPN.
-     * @param vpn The virtual page number (VPN).
-     * @param dirty The new value for the dirty bit (true if the page has been modified).
-     */
-    public void setDirty(int vpn, boolean dirty) {
-        PageTableEntry entry = entries.get(vpn);
-        if (entry != null) {
-            entry.setDirtyBit(dirty);
-            //LogResults.log("Set dirty bit for VPN " + vpn + ": " + dirty);
-        }
-    }
-
-    /**
-     * Sets the reference bit for a given VPN.
-     * @param vpn The virtual page number (VPN).
-     * @param referenced The new value for the reference bit (true if the page has been accessed).
-     */
-    public void setReferenced(int vpn, boolean referenced) {
-        PageTableEntry entry = entries.get(vpn);
-        if (entry != null) {
-            entry.setRefBit(referenced);
-            //LogResults.log("Set reference bit for VPN " + vpn + ": " + referenced);
-        }
-    }
-
-    /**
-     * Sets the validity of the page entry for a given VPN.
-     * @param vpn The virtual page number (VPN).
-     * @param valid The new validity status (true if the page is in memory).
-     */
-    public void setValid(int vpn, boolean valid) {
-        PageTableEntry entry = entries.get(vpn);
-        if (entry != null) {
-            entry.setValidBit(valid);
-            //LogResults.log("Set valid bit for VPN " + vpn + ": " + valid);
-        }
-        if (!valid) {
-            entries.get(vpn).setFrameNumber(-1); // Invalidate the frame number when the page is marked invalid
-        }
     }
 
     /**
@@ -211,6 +106,11 @@ public class TLB {
         //LogResults.log("Copied TLB contents");
         return tlbCopy;
     }
+
+    public Map<Integer, PageTableEntry> getEntries() {
+        return new LinkedHashMap<>(entries); // Return a copy of the entries
+    }
+
     /**
      //     * Retrieves the page table entry for a given VPN if it exists and is valid.
      //     * @param vpn The virtual page number (VPN).
@@ -220,11 +120,116 @@ public class TLB {
         PageTableEntry entry = entries.get(vpn);
         if (entry != null && entry.isValid()) {
             entry.setRefBit(true); // Mark the entry as referenced
-            evictionAlgorithm.updatePageAccess(vpn); // Update the eviction algorithm state
+            //evictionAlgorithm.updatePageAccess(vpn); // Update the eviction algorithm state
             //LogResults.log("TLB hit for VPN " + vpn + ": " + entry);
             return entry;
         }
         //LogResults.log("TLB miss for VPN " + vpn);
         return null;
     }
+
+//    /**
+//     * Checks if a given VPN is present in the TLB.
+//     * @param vpn The virtual page number (VPN).
+//     * @return True if the VPN is present, false otherwise.
+//     */
+//    public boolean containsEntry(int vpn) {
+//        boolean contains = entries.containsKey(vpn);
+//        LogResults.log("TLB contains VPN " + vpn + ": " + contains);
+//        return contains;
+//    }
+//    /**
+//     * Checks if the page entry for the given VPN is dirty (modified).
+//     * @param vpn The virtual page number (VPN).
+//     * @return True if the page is dirty, false otherwise.
+//     */
+//    public boolean isDirty(int vpn) {
+//        PageTableEntry entry = entries.get(vpn);
+//        boolean dirty = entry != null && entry.isDirty();
+//        //LogResults.log("VPN " + vpn + " dirty: " + dirty);
+//        return dirty;
+//    }
+//
+//    /**
+//     * Checks if the page entry for the given VPN has been referenced.
+//     * @param vpn The virtual page number (VPN).
+//     * @return True if the page has been referenced, false otherwise.
+//     */
+//    public boolean isReferenced(int vpn) {
+//        PageTableEntry entry = entries.get(vpn);
+//        boolean referenced = entry != null && entry.isReferenced();
+//        //LogResults.log("VPN " + vpn + " referenced: " + referenced);
+//        return referenced;
+//    }
+//
+//    /**
+//     * Checks if the page entry for the given VPN is valid.
+//     * @param vpn The virtual page number (VPN).
+//     * @return True if the page is valid, false otherwise.
+//     */
+//    public boolean isValid(int vpn) {
+//        PageTableEntry entry = entries.get(vpn);
+//        boolean valid = entry != null && entry.isValid();
+//        //LogResults.log("VPN " + vpn + " valid: " + valid);
+//        return valid;
+//    }
+//
+//    /**
+//     * Finds the corresponding VPN for a given physical page number (PPN).
+//     * @param ppn The physical page number (PPN).
+//     * @return The corresponding VPN, or -1 if not found.
+//     */
+//    public int getCorrespondingVPN(int ppn) {
+//        for (Map.Entry<Integer, PageTableEntry> entry : entries.entrySet()) {
+//            if (entry.getValue().getFrameNumber() == ppn) {
+//                LogResults.log("Found corresponding VPN for PPN " + ppn + ": " + entry.getKey());
+//                return entry.getKey();
+//            }
+//        }
+//        LogResults.log("No corresponding VPN found for PPN " + ppn);
+//        return -1;
+//    }
+//
+//    /**
+//     * Sets the dirty bit for a given VPN.
+//     * @param vpn The virtual page number (VPN).
+//     * @param dirty The new value for the dirty bit (true if the page has been modified).
+//     */
+//    public void setDirty(int vpn, boolean dirty) {
+//        PageTableEntry entry = entries.get(vpn);
+//        if (entry != null) {
+//            entry.setDirtyBit(dirty);
+//            //LogResults.log("Set dirty bit for VPN " + vpn + ": " + dirty);
+//        }
+//    }
+//
+//    /**
+//     * Sets the reference bit for a given VPN.
+//     * @param vpn The virtual page number (VPN).
+//     * @param referenced The new value for the reference bit (true if the page has been accessed).
+//     */
+//    public void setReferenced(int vpn, boolean referenced) {
+//        PageTableEntry entry = entries.get(vpn);
+//        if (entry != null) {
+//            entry.setRefBit(referenced);
+//            //LogResults.log("Set reference bit for VPN " + vpn + ": " + referenced);
+//        }
+//    }
+//
+//    /**
+//     * Sets the validity of the page entry for a given VPN.
+//     * @param vpn The virtual page number (VPN).
+//     * @param valid The new validity status (true if the page is in memory).
+//     */
+//    public void setValid(int vpn, boolean valid) {
+//        PageTableEntry entry = entries.get(vpn);
+//        if (entry != null) {
+//            entry.setValidBit(valid);
+//            //LogResults.log("Set valid bit for VPN " + vpn + ": " + valid);
+//        }
+//        if (!valid) {
+//            entries.get(vpn).setFrameNumber(-1); // Invalidate the frame number when the page is marked invalid
+//        }
+//    }
+
 }

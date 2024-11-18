@@ -131,11 +131,11 @@ public class MemoryController {
         model.addAttribute("pageTableSize", pageTableSize);
 
         // Memory data
-//        model.addAttribute("tlbEntries", memoryManager.getTLBEntries());
-//        model.addAttribute("physicalMemoryEntries", memoryManager.getPhysicalMemoryEntries());
-//        model.addAttribute("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
-//        model.addAttribute("diskEntries", memoryManager.getDiskEntries());
-//        model.addAttribute("pageTableEntries", memoryManager.getPageTableEntries());
+        model.addAttribute("tlbEntries", memoryManager.getTlb().getEntries());
+        model.addAttribute("mainMemory", memoryManager.getMainMemory().getMemory());
+        // model.addAttribute("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
+        model.addAttribute("diskEntries", memoryManager.getSecondaryStorage().getDisk());
+        model.addAttribute("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
 
         // Add default values for attributes that might not be set yet
         if (!model.containsAttribute("loadAddress"))
@@ -296,15 +296,15 @@ public class MemoryController {
         return "redirect:/";
     }
 
-//    @GetMapping("/memoryData")
-//    @ResponseBody
-//    public Map<String, Object> getMemoryData() {
-//        Map<String, Object> data = new HashMap<>();
-//        data.put("tlbEntries", memoryManager.getTLBEntries());
-//        data.put("physicalMemoryEntries", memoryManager.getPhysicalMemoryEntries());
-//        data.put("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
-//        data.put("diskEntries", memoryManager.getDiskEntries());
-//        data.put("pageTableEntries", memoryManager.getPageTableEntries());
-//        return data;
-//    }
+    @GetMapping("/memoryData")
+    @ResponseBody
+    public Map<String, Object> getMemoryData() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("tlbEntries", memoryManager.getTlb().getTLBContents());
+        data.put("mainMemory", memoryManager.getMainMemory().getMemory());
+        //data.put("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
+        data.put("diskEntries", memoryManager.getSecondaryStorage().getDisk());
+        data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
+        return data;
+    }
 }

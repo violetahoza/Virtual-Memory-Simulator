@@ -80,6 +80,11 @@
         .col-md-4 {
             margin-bottom: 20px;
         }
+        .table {
+            table-layout: auto;
+            width: 100%;
+            white-space: nowrap;
+        }
         .table thead th {
             text-align: center;
             padding: 5px 15px;
@@ -88,6 +93,16 @@
             padding: 0.5rem;
             text-align: center;
             color: white;
+            overflow: hidden;
+        }
+        .card-body {
+            overflow-x: auto; /* Enables horizontal scrolling if table overflows */
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .highlight {
+            background-color: #A88CA4;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -215,7 +230,7 @@
                     <h4>TLB</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
+                        <table class="table table-bordered">
                         <thead>
                         <tr>
                             <th>VPN</th>
@@ -227,87 +242,14 @@
                         </thead>
                         <tbody id="tlbBody">
                             <tr th:each="entry : ${tlbEntries}">
-                                <td th:text="${entry.vpn}"></td>
-                                <td th:text="${entry.valid ? '1' : '0'}"></td>
-                                <td th:text="${entry.dirty ? '1' : '0'}"></td>
-                                <td th:text="${entry.ref ? '1' : '0'}"></td>
-                                <td th:text="${entry.ppn}"></td>
+                                <td th:text="${entry.key}"></td>
+                                <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
+                                <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
+                                <td th:text="${entry.value.isReferenced() ? '1' : '0'}"></td>
+                                <td th:text="${entry.value.getFrameNumber()}"></td>
                             </tr>
                         </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Physical Memory</h4>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th>Frame</th>
-                            <th>Data</th>
-                        </tr>
-                        </thead>
-                        <tbody id="physicalMemoryBody">
-                        <tr th:each="entry : ${physicalMemoryEntries}">
-                            <td th:text="${entry.frame}"></td>
-                            <td th:text="${entry.data}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Virtual Memory</h4>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered virtual-memory-table">
-                        <thead>
-                        <tr>
-                            <th>VPN</th>
-                            <th>Data</th>
-                            <th>Allocated</th>
-                        </tr>
-                        </thead>
-                        <tbody id="virtualMemoryBody">
-                        <tr th:each="entry : ${virtualMemoryEntries}">
-                            <td th:text="${entry.vpn}"></td>
-                            <td th:text="${entry.data}"></td>
-                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Disk</h4>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered disk-table">
-                        <thead>
-                        <tr>
-                            <th>VPN</th>
-                            <th>Data</th>
-                        </tr>
-                        </thead>
-                        <tbody id="diskBody">
-                        <tr th:each="entry : ${diskEntries}">
-                            <td th:text="${entry.block}"></td>
-                            <td th:text="${entry.data}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
+                        </table>
                 </div>
             </div>
         </div>
@@ -330,17 +272,90 @@
                         </thead>
                         <tbody id="pageTableBody">
                         <tr th:each="entry : ${pageTableEntries}">
-                            <td th:text="${entrypt.vpn}"></td>
-                            <td th:text="${entrypt.valid ? '1' : '0'}"></td>
-                            <td th:text="${entrypt.dirty ? '1' : '0'}"></td>
-                            <td th:text="${entrypt.ref ? '1' : '0'}"></td>
-                            <td th:text="${entrypt.ppn}"></td>
+                            <td th:text="${entry.key}"></td>
+                            <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.isReferenced() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.getFrameNumber()}"></td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Main Memory</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Frame</th>
+                            <th>Data</th>
+                        </tr>
+                        </thead>
+                        <tbody id="physicalMemoryEntries">
+                        <tr th:each="entry : ${mainMemory}">
+                            <td th:text="${entry.key}"></td>
+                            <td th:text="${entry.value.printContents()}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Disk</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered disk-table">
+                        <thead>
+                        <tr>
+                            <th>VPN</th>
+                            <th>Data</th>
+                        </tr>
+                        </thead>
+                        <tbody id="diskBody">
+                        <tr th:each="entry : ${diskEntries}">
+                            <td th:text="${entry.key}"></td>
+                            <td th:text="${entry.value.printContents()}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!--        <div class="col-md-3">-->
+        <!--            <div class="card">-->
+        <!--                <div class="card-header">-->
+        <!--                    <h4>Virtual Memory</h4>-->
+        <!--                </div>-->
+        <!--                <div class="card-body">-->
+        <!--                    <table class="table table-bordered virtual-memory-table">-->
+        <!--                        <thead>-->
+        <!--                        <tr>-->
+        <!--                            <th>VPN</th>-->
+        <!--                            <th>Data</th>-->
+        <!--                            <th>Allocated</th>-->
+        <!--                        </tr>-->
+        <!--                        </thead>-->
+        <!--                        <tbody id="virtualMemoryBody">-->
+        <!--                        <tr th:each="entry : ${virtualMemoryEntries}">-->
+        <!--                            <td th:text="${entry.vpn}"></td>-->
+        <!--                            <td th:text="${entry.data}"></td>-->
+        <!--                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>-->
+        <!--                        </tr>-->
+        <!--                        </tbody>-->
+        <!--                    </table>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--        </div>-->
     </div>
 </div>
 
@@ -447,69 +462,6 @@
     }
     document.querySelector('form[action="/store"]').onsubmit = validateStoreInputs;
 
-    setInterval(() => {
-        fetch('/memoryData')
-            .then(response => response.json())
-            .then(data => {
-                // Update TLB
-                const tlbBody = document.getElementById('tlbBody');
-                tlbBody.innerHTML = '';
-                data.tlbEntries.forEach(entry => {
-                    tlbBody.innerHTML += `<tr>
-                    <td>${entry.vpn}</td>
-                    <td>${entry.valid ? '1' : '0'}</td>
-                    <td>${entry.dirty ? '1' : '0'}</td>
-                    <td>${entry.ref ? '1' : '0'}</td>
-                    <td>${entry.ppn}</td>
-                </tr>`;
-                });
-
-                // Update Physical Memory
-                const physicalMemoryBody = document.getElementById('physicalMemoryBody');
-                physicalMemoryBody.innerHTML = '';
-                data.physicalMemoryEntries.forEach(entry => {
-                    physicalMemoryBody.innerHTML += `<tr>
-                    <td>${entry.frame}</td>
-                    <td>${entry.data}</td>
-                </tr>`;
-                });
-
-                // Update Virtual Memory
-                const virtualMemoryBody = document.getElementById('virtualMemoryBody');
-                virtualMemoryBody.innerHTML = '';
-                data.virtualMemoryEntries.forEach(entry => {
-                    virtualMemoryBody.innerHTML += `<tr>
-                    <td>${entry.vpn}</td>
-                    <td>${entry.data}</td>
-                    <td>${entry.allocated ? 'Yes' : 'No'}</td>
-                </tr>`;
-                });
-
-                // Update Disk
-                const diskBody = document.getElementById('diskBody');
-                diskBody.innerHTML = '';
-                data.diskEntries.forEach(entry => {
-                    diskBody.innerHTML += `<tr>
-                    <td>${entry.block}</td>
-                    <td>${entry.data}</td>
-                </tr>`;
-                });
-
-                // Update Page Table
-                const pageTableBody = document.getElementById('pageTableBody');
-                pageTableBody.innerHTML = '';
-                data.pageTableEntries.forEach(entry => {
-                    pageTableBody.innerHTML += `<tr>
-                    <td>${entry.vpn}</td>
-                    <td>${entry.valid ? '1' : '0'}</td>
-                    <td>${entry.dirty ? '1' : '0'}</td>
-                    <td>${entry.ref ? '1' : '0'}</td>
-                    <td>${entry.ppn}</td>
-                </tr>`;
-                });
-            })
-            .catch(error => console.error('Error fetching memory data:', error));
-    }, 5000); // Refresh every 5 seconds
 </script>
 </body>
 </html>

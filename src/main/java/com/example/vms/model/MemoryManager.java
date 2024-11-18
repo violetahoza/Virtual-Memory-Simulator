@@ -323,10 +323,15 @@ public class MemoryManager {
      */
     private void storeToMemory(Address physicalAddress, int data) {
         mainMemory.store(physicalAddress, data);
-        if (pageTable.getEntry(physicalAddress.getPageNumber()) != null) {
-            pageTable.getEntry(physicalAddress.getPageNumber()).setDirtyBit(true); // Mark as dirty (modified)
-            pageTable.getEntry(physicalAddress.getPageNumber()).setRefBit(true);  // Mark as referenced
+        int vpn = pageTable.getCorrespondingVPN(physicalAddress.getPageNumber());
+        if (pageTable.getEntry(vpn) != null) {
+            pageTable.getEntry(vpn).setDirtyBit(true); // Mark as dirty (modified)
+            pageTable.getEntry(vpn).setRefBit(true);  // Mark as referenced
             replacementAlgorithm.updatePageAccess(physicalAddress.getPageNumber());
+        }
+        if(tlb.getEntry(vpn) != null) {
+            tlb.getEntry(vpn).setRefBit(true);
+            tlb.getEntry(vpn).setDirtyBit(true);
         }
         LogResults.log("Stored data: " + data + " to: " + physicalAddress.printAddress("Physical") + '\n');
     }
@@ -367,5 +372,20 @@ public class MemoryManager {
         secondaryStorage.printContents();
         tlb.printContents();
         pageTable.printContents();
+    }
+    public MainMemory getMainMemory(){
+        return mainMemory;
+    }
+
+    public TLB getTlb() {
+        return tlb;
+    }
+
+    public PageTable getPageTable() {
+        return pageTable;
+    }
+
+    public SecondaryStorage getSecondaryStorage() {
+        return secondaryStorage;
     }
 }

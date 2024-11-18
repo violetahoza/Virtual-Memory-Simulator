@@ -70,10 +70,15 @@ public class SecondaryStorage {
         logBuilder.append("----------------------");
         LogResults.log(logBuilder.toString()); // Log the final content of secondary storage
     }
-    public void removePage(int vpn){
-        disk.remove(vpn);
-        LogResults.log("Page with VPN " + vpn + " removed from secondary storage.");
+
+    public Map<Integer, Page> getDisk() {
+        return new HashMap<>(disk);
     }
+
+//    public void removePage(int vpn){
+//        disk.remove(vpn);
+//        LogResults.log("Page with VPN " + vpn + " removed from secondary storage.");
+//    }
 //    /**
 //     * Checks if a page exists in secondary storage based on its virtual page number (VPN).
 //     * @param vpn The virtual page number to check.

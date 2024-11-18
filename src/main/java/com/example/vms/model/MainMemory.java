@@ -145,7 +145,7 @@ public class MainMemory {
      */
     public Map<Integer, Page> getMemory() {
         //LogResults.log("Retrieving all pages from memory.");
-        return memory;
+        return new HashMap<>(memory);
     }
     /**
      * Prints all memory contents.
@@ -165,37 +165,37 @@ public class MainMemory {
         LogResults.log(logBuilder.toString());
     }
 
-//    /**
-//     * Creates a copy of a given page.
-//     * @param page The page to be copied.
-//     * @return A copy of the given page.
-//     */
-//    public Page pageCopy(Page page) {
-//        LogResults.log("Creating a copy of the page.");
-//        return page.getCopy();
-//    }
+    /**
+     * Creates a copy of a given page.
+     * @param page The page to be copied.
+     * @return A copy of the given page.
+     */
+    public Page pageCopy(Page page) {
+        LogResults.log("Creating a copy of the page.");
+        return page.getCopy();
+    }
 
-//    /**
-//     * Retrieves the full memory contents, mapping frame numbers to virtual addresses and their associated data.
-//     * @return A map of memory contents, with frame numbers as keys and addresses as the values.
-//     */
-//    public Map<Integer, Map<Integer, Integer>> getMemoryContents() {
-//        //LogResults.log("Retrieving full memory contents.");
-//        Map<Integer, Map<Integer, Integer>> memoryCopy = new HashMap<>();
-//        for (Map.Entry<Integer, Page> entry : memory.entrySet()) {
-//            int frameNumber = entry.getKey();
-//            Page page = entry.getValue();
-//            Map<Integer, Integer> pageContents = page.getPageContents();
-//            Map<Integer, Integer> addressContents = new HashMap<>();
-//
-//            // Convert page contents to physical addresses
-//            for (Map.Entry<Integer, Integer> pageEntry : pageContents.entrySet()) {
-//                int offset = pageEntry.getKey();
-//                int address = frameNumber * pageSize + offset;
-//                addressContents.put(address, pageEntry.getValue());
-//            }
-//            memoryCopy.put(frameNumber, addressContents);
-//        }
-//        return memoryCopy;
-//    }
+    /**
+     * Retrieves the full memory contents, mapping frame numbers to virtual addresses and their associated data.
+     * @return A map of memory contents, with frame numbers as keys and addresses as the values.
+     */
+    public Map<Integer, Map<Integer, Integer>> getMemoryContents() {
+        //LogResults.log("Retrieving full memory contents.");
+        Map<Integer, Map<Integer, Integer>> memoryCopy = new HashMap<>();
+        for (Map.Entry<Integer, Page> entry : memory.entrySet()) {
+            int frameNumber = entry.getKey();
+            Page page = entry.getValue();
+            Map<Integer, Integer> pageContents = page.getPageContents();
+            Map<Integer, Integer> addressContents = new HashMap<>();
+
+            // Convert page contents to physical addresses
+            for (Map.Entry<Integer, Integer> pageEntry : pageContents.entrySet()) {
+                int offset = pageEntry.getKey();
+                int address = frameNumber * pageSize + offset;
+                addressContents.put(address, pageEntry.getValue());
+            }
+            memoryCopy.put(frameNumber, addressContents);
+        }
+        return memoryCopy;
+    }
 }
