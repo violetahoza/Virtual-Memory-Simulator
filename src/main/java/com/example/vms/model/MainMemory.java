@@ -49,7 +49,7 @@ public class MainMemory {
             return -1;
         }
         int data = page.load(address.getOffset());
-        LogResults.log("Data loaded from physical address " + address + ": " + data);
+        // LogResults.log("Data loaded from physical address " + address.printAddress("Physical") + ": " + data);
         return data;
     }
 
@@ -67,7 +67,7 @@ public class MainMemory {
         Page page = memory.get(address.getPageNumber());
         if (page != null) {
             page.store(address.getOffset(), data);
-            LogResults.log("Data successfully stored at physical address: " + address);
+            // LogResults.log("Data successfully stored at physical address: " + address.printAddress("Physical"));
         } else {
             LogResults.log("Invalid physical address: page not found.");
         }

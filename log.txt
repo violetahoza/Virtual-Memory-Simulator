@@ -4,3 +4,75 @@ Main memory initialized with 0 frames, each of size 0 bytes.
 Secondary storage initialized with max pages: 0 and page size: 0
 FIFO replacement algorithm initialized with max size: 0
 TLB initialized with size: 0 and eviction algorithm: FIFOReplacement
+FIFO replacement algorithm initialized with max size: 4
+Page table initialized with size: 8
+TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
+Main memory initialized with 4 frames, each of size 4 bytes.
+Secondary storage initialized with max pages: 8 and page size: 4
+
+Simulation configured with virtualAddressWidth: 5, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
+
+FIFO replacement algorithm initialized with max size: 4
+Page table initialized with size: 32
+TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
+Main memory initialized with 4 frames, each of size 4 bytes.
+Secondary storage initialized with max pages: 8 and page size: 4
+
+Simulation configured with virtualAddressWidth: 7, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
+
+FIFO replacement algorithm initialized with max size: 4
+Page table initialized with size: 8
+TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
+Main memory initialized with 4 frames, each of size 4 bytes.
+Secondary storage initialized with max pages: 8 and page size: 4
+
+Simulation configured with virtualAddressWidth: 5, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
+
+Page successfully loaded into frame 0
+Added VPN 0 to FIFO queue
+
+Stored a copy of VPN 0 in secondary storage.
+Mapped VPN 0 to frame 0 in main memory.
+
+Page successfully loaded into frame 1
+Added VPN 3 to FIFO queue
+
+Stored a copy of VPN 3 in secondary storage.
+Mapped VPN 3 to frame 1 in main memory.
+
+Page successfully loaded into frame 2
+Added VPN 1 to FIFO queue
+
+Stored a copy of VPN 1 in secondary storage.
+Mapped VPN 1 to frame 2 in main memory.
+
+Page successfully loaded into frame 3
+Added VPN 5 to FIFO queue
+
+Stored a copy of VPN 5 in secondary storage.
+Mapped VPN 5 to frame 3 in main memory.
+
+
+No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 7 directly to disk
+
+
+No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 2 directly to disk
+
+
+No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 4 directly to disk
+
+
+No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 6 directly to disk
+
+
+Access request for virtual address: Virtual page number: 0 Offset: 0 (Virtual address: 0)
+TLB miss for virtual page nr: 0
+Page table hit! Physical page number: 0 for virtual page number: 0
+
+Added VPN 0 to TLB: Valid: true Dirty: false Referenced: true Frame: 0 In storage: false
+Loaded data: 0 from: Frame number: 0 Offset: 0
+

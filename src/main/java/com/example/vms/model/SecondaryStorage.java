@@ -33,7 +33,7 @@ public class SecondaryStorage {
      */
     public void store(int vpn, Page page) {
         disk.put(vpn, page); // Store the page at the given virtual page number (VPN)
-        LogResults.log("Page with VPN " + vpn + " stored successfully into secondary storage.");
+        // LogResults.log("Page with VPN " + vpn + " stored successfully into secondary storage.");
     }
 
     /**

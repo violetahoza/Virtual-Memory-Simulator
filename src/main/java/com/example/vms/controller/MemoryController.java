@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Controller that manages the simulation of a virtual memory system, including page replacement algorithms,
@@ -20,7 +17,6 @@ import java.util.Map;
 @Controller
 @SessionAttributes({"loadAddress", "storeAddress", "storeData"})
 public class MemoryController {
-
     private MemoryManager memoryManager;
     private String currentReplacementAlgorithm = "FIFO";  // Store current algorithm for display
     private int virtualAddressWidth;
@@ -31,6 +27,7 @@ public class MemoryController {
     private int virtualMemorySize;
     private int pageTableSize;
     private PageTable pageTable = null;
+    public static List<String> logMessages = new ArrayList<>(); // List to store log messages
 
     /**
      * Default constructor that initializes the memory manager with default values.
@@ -136,6 +133,7 @@ public class MemoryController {
         // model.addAttribute("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
         model.addAttribute("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         model.addAttribute("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
+        model.addAttribute("logMessages", logMessages);
 
         // Add default values for attributes that might not be set yet
         if (!model.containsAttribute("loadAddress"))
@@ -273,6 +271,7 @@ public class MemoryController {
         secondaryMemorySize = 0;
         pageSize = 0;
         int pageNumber = 0;
+        logMessages.clear();
 
         // Add the default values to the model to reset the fields
         model.addAttribute("virtualAddressWidth", virtualAddressWidth);
@@ -288,6 +287,7 @@ public class MemoryController {
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);
         model.addAttribute("allocatePage", pageNumber);
+        model.addAttribute("logMessages", logMessages);
 
         // Log the reset action
         LogResults.log("\nSimulation reset.\n");
@@ -306,5 +306,10 @@ public class MemoryController {
         data.put("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
         return data;
+    }
+    @PostMapping("/clearMessages")
+    public String clearMessages() {
+        logMessages.clear(); // Clear the log messages
+        return "redirect:/"; // Redirect to the index page
     }
 }

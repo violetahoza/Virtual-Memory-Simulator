@@ -1,5 +1,7 @@
 package com.example.vms.utils;
 
+import com.example.vms.controller.MemoryController;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,6 +22,7 @@ public class LogResults {
         try {
             file.write(message + '\n'); // write the message to the log file
             file.flush();
+            MemoryController.logMessages.add(message);
         } catch (IOException e) {
             e.printStackTrace();
         }

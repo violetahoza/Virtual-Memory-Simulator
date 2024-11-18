@@ -98,7 +98,7 @@
         .card-body {
             overflow-x: auto; /* Enables horizontal scrolling if table overflows */
             overflow-y: auto;
-            max-height: 500px;
+            max-height: 490px;
         }
         .highlight {
             background-color: #A88CA4;
@@ -163,6 +163,46 @@
                 </div>
             </div>
         </div>
+
+        <!-- Simulation Results Column -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><h4>Simulation Results</h4></div>
+                <div class="card-body">
+                    <ul class="list-group result-list">
+                        <li class="list-group-item">TLB Hit Rate: <span th:text="${tlbHit}"></span></li>
+                        <li class="list-group-item">TLB Miss Rate: <span th:text="${tlbMiss}"></span></li>
+                        <li class="list-group-item">Page Table Hit Rate: <span th:text="${pageTableHit}"></span></li>
+                        <li class="list-group-item">Page Table Miss Rate: <span th:text="${pageTableMiss}"></span></li>
+                        <li class="list-group-item">Disk Reads: <span th:text="${diskRead}"></span></li>
+                        <li class="list-group-item">Disk Writes: <span th:text="${diskWrite}"></span></li>
+                        <li class="list-group-item">Pages Evicted: <span th:text="${pageEviction}"></span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><h4>Simulation Messages</h4></div>
+                <div class="card-body">
+                    <div id="simulationMessages" style="background-color: #ffe5ec; color: #A88CA4; padding: 10px; height: 285px; overflow-y: auto; border: 1px solid #cdb4db; border-radius: 0.375rem;">
+                        <ul class="list-group result-list" id="simulationMessagesList">
+                            <li th:each="message : ${logMessages}" class="list-group-item" th:text="${message}"></li>
+                        </ul>
+                    </div>
+                    <form action="/clearMessages" method="post">
+                        <button type="submit" class="btn btn-custom" style="margin-top: 10px;">
+                            <i class="fa fa-trash icon"></i> Clear Messages
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Tables Section -->
+    <div class="row">
         <!-- Store and Load Address Column -->
         <div class="col-md-4">
             <div class="card">
@@ -204,58 +244,8 @@
                 </div>
             </div>
         </div>
-        <!-- Simulation Results Column -->
+
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header"><h4>Simulation Results</h4></div>
-                <div class="card-body">
-                    <ul class="list-group result-list">
-                        <li class="list-group-item">TLB Hit Rate: <span th:text="${tlbHit}"></span></li>
-                        <li class="list-group-item">TLB Miss Rate: <span th:text="${tlbMiss}"></span></li>
-                        <li class="list-group-item">Page Table Hit Rate: <span th:text="${pageTableHit}"></span></li>
-                        <li class="list-group-item">Page Table Miss Rate: <span th:text="${pageTableMiss}"></span></li>
-                        <li class="list-group-item">Disk Reads: <span th:text="${diskRead}"></span></li>
-                        <li class="list-group-item">Disk Writes: <span th:text="${diskWrite}"></span></li>
-                        <li class="list-group-item">Pages Evicted: <span th:text="${pageEviction}"></span></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Memory Tables Section -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h4>TLB</h4>
-                </div>
-                <div class="card-body">
-                        <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th>VPN</th>
-                            <th>Valid</th>
-                            <th>Dirty</th>
-                            <th>Ref</th>
-                            <th>PPN</th>
-                        </tr>
-                        </thead>
-                        <tbody id="tlbBody">
-                            <tr th:each="entry : ${tlbEntries}">
-                                <td th:text="${entry.key}"></td>
-                                <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
-                                <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
-                                <td th:text="${entry.value.isReferenced() ? '1' : '0'}"></td>
-                                <td th:text="${entry.value.getFrameNumber()}"></td>
-                            </tr>
-                        </tbody>
-                        </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
                     <h4>Page Table</h4>
@@ -285,7 +275,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
                     <h4>Main Memory</h4>
@@ -309,7 +299,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
                     <h4>Disk</h4>
@@ -326,6 +316,35 @@
                         <tr th:each="entry : ${diskEntries}">
                             <td th:text="${entry.key}"></td>
                             <td th:text="${entry.value.printContents()}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>TLB</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>VPN</th>
+                            <th>Valid</th>
+                            <th>Dirty</th>
+                            <th>Ref</th>
+                            <th>PPN</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tlbBody">
+                        <tr th:each="entry : ${tlbEntries}">
+                            <td th:text="${entry.key}"></td>
+                            <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.isReferenced() ? '1' : '0'}"></td>
+                            <td th:text="${entry.value.getFrameNumber()}"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -357,20 +376,6 @@
         <!--                </div>-->
         <!--            </div>-->
         <!--        </div>-->
-    </div>
-    <div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><h4>Simulation Messages</h4></div>
-            <div class="card-body">
-                <div id="simulationMessages" style="background-color: #ffe5ec; color: #A88CA4; padding: 10px; height: 200px; overflow-y: auto; border: 1px solid #cdb4db; border-radius: 0.375rem;">
-                    <ul class="list-group" id="simulationMessagesList">
-                        <!-- Simulation messages will be added here dynamically -->
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 </div>
 
@@ -489,6 +494,16 @@
         if (defaultMessage) {
             defaultMessage.style.display = 'none';
         }
+    }
+    window.onload = function() {
+        const logMessages = /*[[${logMessages}]]*/ []; // Fetch logMessages from the model
+        logMessages.forEach(message => {
+            logMessage(message);
+        });
+    };
+    function clearMessages() {
+        const messageList = document.getElementById('simulationMessagesList');
+        messageList.innerHTML = '';
     }
 </script>
 </body>
