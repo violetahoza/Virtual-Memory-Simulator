@@ -4,6 +4,7 @@ import com.example.vms.utils.LogResults;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * FIFOReplacement is an implementation of the ReplacementAlgorithm interface using the
@@ -63,4 +64,19 @@ public class FIFOReplacement implements ReplacementAlgorithm {
     public void updatePageAccess(int vpn) {
         // FIFO doesn't require tracking page access, so this method does nothing.
     }
+//    /**
+//     * Returns the oldest page (FIFO order) that is currently in the TLB.
+//     * @param tlbPages A set of VPNs representing the pages currently in the TLB.
+//     * @return The VPN of the oldest page in the TLB, or -1 if no valid page is found.
+//     */
+//    public int getTLBFIFOPage(Set<Integer> tlbPages) {
+//        for (int vpn : pageQueue) {
+//            if (tlbPages.contains(vpn)) {
+//                // LogResults.log("Selected VPN " + vpn + " for eviction from FIFO queue among TLB pages.");
+//                return vpn; // Return the first VPN in the FIFO order that is in the TLB
+//            }
+//        }
+//        LogResults.log("No valid TLB page found for FIFO eviction.");
+//        return -1;
+//    }
 }

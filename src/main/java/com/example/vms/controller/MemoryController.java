@@ -60,9 +60,13 @@ public class MemoryController {
             case "Optimal":
                 algorithm = new OptimalReplacement();
                 Map<Integer, List<Integer>> futureReferences = new HashMap<>();
-                futureReferences.put(0, Arrays.asList(3, 8, 15)); // VPN 0 is accessed at steps 3, 8, and 15
-                futureReferences.put(1, Arrays.asList(5, 10, 20)); // VPN 1 is accessed at steps 5, 10, and 20
-                futureReferences.put(2, Arrays.asList(1, 4, 7));
+                futureReferences.put(0, Arrays.asList(2, 6, 12)); // VPN 0 is accessed at steps 2, 6, and 12
+                futureReferences.put(1, Arrays.asList(4, 10, 15)); // VPN 1 is accessed at steps 4, 10, and 15
+                futureReferences.put(2, Arrays.asList(1, 5, 13));
+                futureReferences.put(3, Arrays.asList(3, 9, 14));
+                futureReferences.put(4, Arrays.asList(7, 11, 16));
+                futureReferences.put(5, Arrays.asList(8, 12, 17));
+                futureReferences.put(6, Arrays.asList(6, 10, 18));
                 memoryManager.setFutureReferences(futureReferences);
                 break;
             case "FIFO":
@@ -168,7 +172,9 @@ public class MemoryController {
             @RequestParam("secondaryMemorySize") int secondaryMemorySize,
             @RequestParam("replacementAlgorithm") String replacementAlgorithm,
             Model model) {
-
+        Results.logStats();
+        logMessages.clear();
+        Results.reset();
         // Initialize MemoryManager with user-configured parameters
         initializeMemoryManager(virtualAddressWidth, pageSize, tlbSize, physicalMemorySize, secondaryMemorySize, replacementAlgorithm);
 
@@ -197,9 +203,9 @@ public class MemoryController {
      */
     @PostMapping("/load")
     public String loadAddress(@RequestParam("loadAddress") int address, Model model) {
+        logMessages.clear();
         // Simulate loading the address
         memoryManager.load(address);
-
         // Add the address to the model to display
         model.addAttribute("loadAddress", address);
         //LogResults.log("Loaded address: " + address);
@@ -216,6 +222,7 @@ public class MemoryController {
      */
     @PostMapping("/store")
     public String storeAddress(@RequestParam("storeVPN") int vpn, @RequestParam("storeOffset") int offset, @RequestParam("data") int data, Model model) {
+        logMessages.clear();
         // Simulate storing the data at the given address
         int address = vpn * pageSize + offset;
         memoryManager.store(address, data);
@@ -236,9 +243,9 @@ public class MemoryController {
      */
     @PostMapping("/allocate")
     public String allocatePage(@RequestParam("allocatePage") int pageNumber, Model model) {
+        logMessages.clear();
         // Simulate page allocation
         memoryManager.allocatePage(pageNumber);
-
         // Add the allocated page number to the model
         model.addAttribute("allocatePage", pageNumber);
         //LogResults.log("Allocated page number: " + pageNumber);
@@ -296,6 +303,15 @@ public class MemoryController {
         return "redirect:/";
     }
 
+    /**
+     * Handles an HTTP GET request to retrieve memory-related data.
+     * The response includes information about the TLB, main memory, disk, and page table contents.
+     * @return A map containing:
+     *         - "tlbEntries": The current contents of the Translation Lookaside Buffer.
+     *         - "mainMemory": The contents of the main memory.
+     *         - "diskEntries": The contents of the secondary storage.
+     *         - "pageTableEntries": The current entries in the page table.
+     */
     @GetMapping("/memoryData")
     @ResponseBody
     public Map<String, Object> getMemoryData() {
@@ -307,6 +323,12 @@ public class MemoryController {
         data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
         return data;
     }
+
+    /**
+     * Handles an HTTP POST request to clear all log messages stored in the application.
+     * After clearing the messages, the user is redirected to the index page.
+     * @return A redirect string to the index page ("/").
+     */
     @PostMapping("/clearMessages")
     public String clearMessages() {
         logMessages.clear(); // Clear the log messages

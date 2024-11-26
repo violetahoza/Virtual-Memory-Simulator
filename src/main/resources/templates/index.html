@@ -201,7 +201,6 @@
         </div>
     </div>
 
-    <!-- Memory Tables Section -->
     <div class="row">
         <!-- Store and Load Address Column -->
         <div class="col-md-4">
@@ -244,14 +243,14 @@
                 </div>
             </div>
         </div>
-
+        <!-- Memory Tables Section -->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
                     <h4>Page Table</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="pageTable">
                         <thead>
                         <tr>
                             <th>VPN</th>
@@ -281,7 +280,7 @@
                     <h4>Main Memory</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="mainMemoryTable">
                         <thead>
                         <tr>
                             <th>Frame</th>
@@ -305,7 +304,7 @@
                     <h4>Disk</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered disk-table">
+                    <table class="table table-bordered" id="diskTable">
                         <thead>
                         <tr>
                             <th>VPN</th>
@@ -328,7 +327,7 @@
                     <h4>TLB</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="tlbTable">
                         <thead>
                         <tr>
                             <th>VPN</th>
@@ -501,10 +500,10 @@
             logMessage(message);
         });
     };
-    function clearMessages() {
-        const messageList = document.getElementById('simulationMessagesList');
-        messageList.innerHTML = '';
-    }
+    // function clearMessages() {
+    //     const messageList = document.getElementById('simulationMessagesList');
+    //     messageList.innerHTML = '';
+    // }
 </script>
 </body>
 </html>

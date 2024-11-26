@@ -4,61 +4,48 @@ Main memory initialized with 0 frames, each of size 0 bytes.
 Secondary storage initialized with max pages: 0 and page size: 0
 FIFO replacement algorithm initialized with max size: 0
 TLB initialized with size: 0 and eviction algorithm: FIFOReplacement
-FIFO replacement algorithm initialized with max size: 4
+
+TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
+Page table hits: 0 Page table misses: 0 Page table accesses: 0
+TLB Hit Rate: 0.0%
+TLB Miss Rate: 0.0%
+Page Table Hit Rate: 0.0%
+Page Table Miss Rate: 0.0%
+Disk Reads: 0
+Disk Writes: 0
+Page Evictions: 0
+
+Optimal Replacement algorithm initialized.
 Page table initialized with size: 8
-TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
+TLB initialized with size: 2 and eviction algorithm: OptimalReplacement
 Main memory initialized with 4 frames, each of size 4 bytes.
 Secondary storage initialized with max pages: 8 and page size: 4
 
-Simulation configured with virtualAddressWidth: 5, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
+Simulation configured with virtualAddressWidth: 5, pageSize: 4, tlbSize: 2, physicalMemorySize: 16 secondaryMemorySize: 32
 
-FIFO replacement algorithm initialized with max size: 4
-Page table initialized with size: 32
-TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
-Main memory initialized with 4 frames, each of size 4 bytes.
-Secondary storage initialized with max pages: 8 and page size: 4
-
-Simulation configured with virtualAddressWidth: 7, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
-
-FIFO replacement algorithm initialized with max size: 4
-Page table initialized with size: 8
-TLB initialized with size: 3 and eviction algorithm: FIFOReplacement
-Main memory initialized with 4 frames, each of size 4 bytes.
-Secondary storage initialized with max pages: 8 and page size: 4
-
-Simulation configured with virtualAddressWidth: 5, pageSize: 4, tlbSize: 3, physicalMemorySize: 16 secondaryMemorySize: 32
-
-Page successfully loaded into frame 0
-Added VPN 0 to FIFO queue
+Page with VPN 0 successfully loaded into frame 0
+Added VPN 0 to active pages at step 0
 
 Stored a copy of VPN 0 in secondary storage.
 Mapped VPN 0 to frame 0 in main memory.
 
-Page successfully loaded into frame 1
-Added VPN 3 to FIFO queue
-
-Stored a copy of VPN 3 in secondary storage.
-Mapped VPN 3 to frame 1 in main memory.
-
-Page successfully loaded into frame 2
-Added VPN 1 to FIFO queue
+Page with VPN 1 successfully loaded into frame 1
+Added VPN 1 to active pages at step 0
 
 Stored a copy of VPN 1 in secondary storage.
-Mapped VPN 1 to frame 2 in main memory.
+Mapped VPN 1 to frame 1 in main memory.
 
-Page successfully loaded into frame 3
-Added VPN 5 to FIFO queue
+Page with VPN 2 successfully loaded into frame 2
+Added VPN 2 to active pages at step 0
 
-Stored a copy of VPN 5 in secondary storage.
-Mapped VPN 5 to frame 3 in main memory.
+Stored a copy of VPN 2 in secondary storage.
+Mapped VPN 2 to frame 2 in main memory.
 
+Page with VPN 3 successfully loaded into frame 3
+Added VPN 3 to active pages at step 0
 
-No unmapped frames available in main memory.
-No available frames in main memory. Stored VPN 7 directly to disk
-
-
-No unmapped frames available in main memory.
-No available frames in main memory. Stored VPN 2 directly to disk
+Stored a copy of VPN 3 in secondary storage.
+Mapped VPN 3 to frame 3 in main memory.
 
 
 No unmapped frames available in main memory.
@@ -66,13 +53,85 @@ No available frames in main memory. Stored VPN 4 directly to disk
 
 
 No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 5 directly to disk
+
+
+No unmapped frames available in main memory.
 No available frames in main memory. Stored VPN 6 directly to disk
+
+
+No unmapped frames available in main memory.
+No available frames in main memory. Stored VPN 7 directly to disk
+
+
+Store request for virtual address: Virtual page number: 2 Offset: 0 (Virtual address: 8)
+TLB miss for virtual page number: 2
+Page table hit! Physical page number: 2 for virtual page number: 2
+Added VPN 2 to TLB
+Updated access time for VPN 2 to step 1
+Stored data: 76 to: Frame number: 2 Offset: 0
 
 
 Access request for virtual address: Virtual page number: 0 Offset: 0 (Virtual address: 0)
 TLB miss for virtual page nr: 0
 Page table hit! Physical page number: 0 for virtual page number: 0
 
-Added VPN 0 to TLB: Valid: true Dirty: false Referenced: true Frame: 0 In storage: false
+Added VPN 0 to TLB
+Updated access time for VPN 0 to step 2
 Loaded data: 0 from: Frame number: 0 Offset: 0
+
+
+Store request for virtual address: Virtual page number: 3 Offset: 1 (Virtual address: 13)
+TLB miss for virtual page number: 3
+Page table hit! Physical page number: 3 for virtual page number: 3
+Selected VPN 0 for TLB eviction based on Optimal Replacement (furthest use at step 2147483647).
+Added VPN 3 to TLB
+Updated access time for VPN 3 to step 3
+Stored data: 66 to: Frame number: 3 Offset: 1
+
+
+Store request for virtual address: Virtual page number: 1 Offset: 0 (Virtual address: 4)
+TLB miss for virtual page number: 1
+Page table hit! Physical page number: 1 for virtual page number: 1
+Selected VPN 2 for TLB eviction based on Optimal Replacement (furthest use at step 2147483647).
+Added VPN 1 to TLB
+Updated access time for VPN 1 to step 4
+Stored data: 23 to: Frame number: 1 Offset: 0
+
+
+Access request for virtual address: Virtual page number: 2 Offset: 0 (Virtual address: 8)
+TLB miss for virtual page nr: 2
+Page table hit! Physical page number: 2 for virtual page number: 2
+
+Selected VPN 1 for TLB eviction based on Optimal Replacement (furthest use at step 2147483647).
+Added VPN 2 to TLB
+Updated access time for VPN 2 to step 5
+Loaded data: 76 from: Frame number: 2 Offset: 0
+
+
+Store request for virtual address: Virtual page number: 0 Offset: 1 (Virtual address: 1)
+TLB miss for virtual page number: 0
+Page table hit! Physical page number: 0 for virtual page number: 0
+Selected VPN 2 for TLB eviction based on Optimal Replacement (furthest use at step 2147483647).
+Added VPN 0 to TLB
+Updated access time for VPN 0 to step 6
+Stored data: 13 to: Frame number: 0 Offset: 1
+
+
+Store request for virtual address: Virtual page number: 4 Offset: 0 (Virtual address: 16)
+TLB miss for virtual page number: 4
+Page table miss for virtual page number: 4
+Page with VPN 4 loaded successfully from secondary storage.
+Memory is full.
+Evicted VPN 0 with furthest future use at step 2147483647
+Evicting VPN 0 from frame 0
+Evicted page is dirty. Writing back to disk.
+Page removed from frame number 0
+TLB contains VPN 0: true
+Removed VPN 0 from TLB
+Page with VPN 4 successfully loaded into frame 0
+Added VPN 4 to TLB
+Added VPN 4 to active pages at step 6
+Updated access time for VPN 4 to step 7
+Stored data: 12 to: Frame number: 0 Offset: 0
 

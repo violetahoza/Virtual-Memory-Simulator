@@ -5,6 +5,7 @@ import com.example.vms.utils.LogResults;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * NRU (Not Recently Used) Replacement algorithm implementation. This algorithm selects a victim page
@@ -100,7 +101,7 @@ public class NRUReplacement implements ReplacementAlgorithm {
             activePages.add(vpn);
             LogResults.log("Added VPN " + vpn + " to active pages.");
         }
-        updatePageAccess(vpn);
+        // updatePageAccess(vpn);
     }
 
     /**
@@ -129,5 +130,31 @@ public class NRUReplacement implements ReplacementAlgorithm {
             }
         }
         LogResults.log("Reset referenced bits for all active pages.");
+    }
+    /**
+     * Finds the least desirable page to evict among a set of valid TLB pages.
+     * @param tlbPages A set of VPNs representing the pages currently in the TLB.
+     * @return The VPN of the page to evict, or -1 if no valid page is found.
+     */
+    public int getTLBNRUPage(Set<Integer> tlbPages) {
+        for (int classNum = 0; classNum < 4; classNum++) {
+            List<Integer> classPages = new ArrayList<>();
+            for (int vpn : activePages) {
+                if (tlbPages.contains(vpn)) { // Only consider pages in the TLB
+                    PageTableEntry entry = pageTable.getEntry(vpn);
+                    if (entry != null && getPageClass(entry) == classNum) {
+                        classPages.add(vpn);
+                    }
+                }
+            }
+            if (!classPages.isEmpty()) {
+                int victimIndex = random.nextInt(classPages.size());
+                int victimVpn = classPages.get(victimIndex);
+                LogResults.log("Selected VPN " + victimVpn + " for eviction from class " + classNum + " among TLB pages.");
+                return victimVpn;
+            }
+        }
+        // LogResults.log("No suitable TLB page found for eviction.");
+        return -1;
     }
 }

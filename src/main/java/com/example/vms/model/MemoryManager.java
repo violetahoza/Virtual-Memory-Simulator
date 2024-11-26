@@ -20,7 +20,7 @@ public class MemoryManager {
     private ReplacementAlgorithm replacementAlgorithm;
     private int pageSize, virtualAddressWidth, virtualMemorySize;
     private int operationCount; // Counter for memory operations
-    private static final int RESET_INTERVAL = 10; // Reset every 10 operations
+    private static final int RESET_INTERVAL = 5; // Reset every 5 operations
 
     /**
      * Constructs the MemoryManager with the provided memory configurations.
@@ -215,11 +215,10 @@ public class MemoryManager {
             LogResults.log("Page table hit! Physical page number: " + entry.getFrameNumber() + " for virtual page number: " + vpn);
             Results.pageTableHit++;
             tlb.addEntry(vpn, entry);
-            replacementAlgorithm.updatePageAccess(vpn); // Update LRU on page table hit
+            //replacementAlgorithm.updatePageAccess(vpn); // Update LRU on page table hit
             storeToMemory(new Address(entry.getFrameNumber(), offset), data);
             return;
         }
-
         LogResults.log("Page table miss for virtual page number: " + vpn);
         Results.pageTableMiss++;
         if (handlePageFault(vpn) == -1)
@@ -234,7 +233,7 @@ public class MemoryManager {
      * @return The frame number where the page was loaded, or -1 if an error occurred.
      */
     private int handlePageFault(int vpn) {
-        LogResults.log("Page fault for virtual page number: " + vpn);
+        // LogResults.log("Page fault for virtual page number: " + vpn);
 
         // Step 1: Load the page from secondary storage
         Page page = secondaryStorage.load(vpn);
@@ -265,7 +264,7 @@ public class MemoryManager {
         PageTableEntry newEntry = pageTable.getEntry(vpn);
         tlb.addEntry(vpn, newEntry);
         replacementAlgorithm.addPage(vpn);
-        LogResults.log("Loaded VPN " + vpn + " into frame " + frameToUse);
+        // LogResults.log("Loaded VPN " + vpn + " into frame " + frameToUse);
         return frameToUse;
     }
 
@@ -299,7 +298,8 @@ public class MemoryManager {
         pageTable.setDirty(victimVpn, false);
         pageTable.setReferenced(victimVpn, false);
         pageTable.setPPN(victimVpn, -1);
-        tlb.removeEntry(victimVpn);
+        if(tlb.containsEntry(victimVpn) != false)
+            tlb.removeEntry(victimVpn);
         Results.pageEviction++;
         return victimFrame;
     }
@@ -310,9 +310,10 @@ public class MemoryManager {
      */
     private void loadFromMemory(Address physicalAddress) {
         int data = mainMemory.load(physicalAddress);
-        if (pageTable.getEntry(physicalAddress.getPageNumber()) != null) {
-            pageTable.getEntry(physicalAddress.getPageNumber()).setRefBit(true);  // Mark the referenced bit, since the page has been accessed
-            replacementAlgorithm.updatePageAccess(physicalAddress.getPageNumber());
+        int vpn = pageTable.getCorrespondingVPN(physicalAddress.getPageNumber());
+        if (pageTable.getEntry(vpn) != null) {
+            pageTable.getEntry(vpn).setRefBit(true);  // Mark the referenced bit, since the page has been accessed
+            replacementAlgorithm.updatePageAccess(vpn);
         }
         LogResults.log("Loaded data: " + data + " from: " + physicalAddress.printAddress("Physical") + '\n');
     }
@@ -328,7 +329,7 @@ public class MemoryManager {
         if (pageTable.getEntry(vpn) != null) {
             pageTable.getEntry(vpn).setDirtyBit(true); // Mark as dirty (modified)
             pageTable.getEntry(vpn).setRefBit(true);  // Mark as referenced
-            replacementAlgorithm.updatePageAccess(physicalAddress.getPageNumber());
+            replacementAlgorithm.updatePageAccess(vpn);
         }
         if(tlb.getEntry(vpn) != null) {
             tlb.getEntry(vpn).setRefBit(true);
@@ -338,7 +339,9 @@ public class MemoryManager {
     }
 
     /**
-     * Increments the operation count and resets NRU referenced bits if the threshold is reached.
+     * Tracks the number of memory operations performed and resets
+     * NRU replacement algorithm referenced bits after reaching a predefined interval.
+     * This periodic reset ensures proper behavior for NRU replacement.
      */
     private void incrementOperationCount() {
         operationCount++;
@@ -358,6 +361,12 @@ public class MemoryManager {
         }
     }
 
+    /**
+     * Sets the future memory access references for the Optimal Replacement algorithm.
+     * It must be called before the eviction process to enable the Optimal Replacement algorithm to
+     * make decisions based on future memory accesses.
+     * @param futureReferences A map where the key is the Virtual Page Number (VPN) and the value is a list of future access steps.
+     */
     public void setFutureReferences(Map<Integer, List<Integer>> futureReferences) {
         if (replacementAlgorithm instanceof OptimalReplacement) {
             ((OptimalReplacement) replacementAlgorithm).setFutureReferences(futureReferences);
@@ -374,19 +383,9 @@ public class MemoryManager {
         tlb.printContents();
         pageTable.printContents();
     }
-    public MainMemory getMainMemory(){
-        return mainMemory;
-    }
 
-    public TLB getTlb() {
-        return tlb;
-    }
-
-    public PageTable getPageTable() {
-        return pageTable;
-    }
-
-    public SecondaryStorage getSecondaryStorage() {
-        return secondaryStorage;
-    }
+    public MainMemory getMainMemory(){ return mainMemory; } // gets the current instance of the main memory
+    public TLB getTlb() { return tlb; } // gets the current instance of the TLB
+    public PageTable getPageTable() { return pageTable; } // gets the current instance of the  page table
+    public SecondaryStorage getSecondaryStorage() { return secondaryStorage; } // gets the current instance of the disk
 }

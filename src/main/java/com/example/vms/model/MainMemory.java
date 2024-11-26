@@ -87,7 +87,7 @@ public class MainMemory {
         memory.put(frameNr, page.getCopy());
         frameToVirtualPageMap.put(frameNr, vpn);
         lastFrameNr = Math.max(lastFrameNr, frameNr + 1); // Update last used frame if necessary
-        LogResults.log("Page successfully loaded into frame " + frameNr);
+        LogResults.log("Page with VPN " + vpn + " successfully loaded into frame " + frameNr);
     }
 
     /**
@@ -136,7 +136,7 @@ public class MainMemory {
      * @return The page stored at the specified frame number.
      */
     public Page getPage(int frameNr) {
-        LogResults.log("Retrieving page at frame number: " + frameNr);
+        // LogResults.log("Retrieving page at frame number: " + frameNr);
         return memory.get(frameNr);
     }
     /**

@@ -4,6 +4,7 @@ import com.example.vms.utils.LogResults;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a Translation Lookaside Buffer (TLB) that stores mappings of VPNs to page table entries.
@@ -34,16 +35,65 @@ public class TLB {
     public void addEntry(int vpn, PageTableEntry entry) {
         // Evict an entry if the TLB is full
         if (isFull()) {
-            int evictedVpn = evictionAlgorithm.evictPage();
-            if (entries.containsKey(evictedVpn)) {
-                entries.remove(evictedVpn); // Remove the evicted entry from the TLB
+            // Get the set of VPNs currently in the TLB
+            Set<Integer> currentTLBEntries = entries.keySet();
+            if(evictionAlgorithm instanceof LRUReplacement) {
+                // Ask LRUReplacement for the least recently used page in the TLB
+                int lruVpn = ((LRUReplacement) evictionAlgorithm).getTLBLRUPage(currentTLBEntries);
+                if (lruVpn != -1 && entries.containsKey(lruVpn)) {
+                    entries.remove(lruVpn); // Remove the entry from the TLB
+                    LogResults.log("Evicted VPN " + lruVpn + " from TLB based on TLB-specific LRU algorithm");
+                } else {
+                    LogResults.log("No valid entry found for eviction in TLB.");
+                }
             }
-            LogResults.log("Evicted VPN " + evictedVpn + " from TLB based on eviction algorithm");
+            else if (evictionAlgorithm instanceof NRUReplacement) {
+                // Ask NRUReplacement for the least desirable page in the TLB
+                int nruVpn = ((NRUReplacement) evictionAlgorithm).getTLBNRUPage(currentTLBEntries);
+                if (nruVpn != -1 && entries.containsKey(nruVpn)) {
+                    entries.remove(nruVpn); // Remove the entry from the TLB
+                    LogResults.log("Evicted VPN " + nruVpn + " from TLB based on NRU algorithm.");
+                } else {
+                    LogResults.log("No valid entry found for eviction in TLB.");
+                }
+            }
+            else if (evictionAlgorithm instanceof FIFOReplacement) {
+                // For FIFO, evict the first entry directly without using the eviction algorithm
+                int fifoVpn = getFirstEntryVPN();
+                if (fifoVpn != -1) {
+                    entries.remove(fifoVpn); // Remove the entry from the TLB
+                    LogResults.log("Evicted VPN " + fifoVpn + " from TLB based on FIFO algorithm.");
+                } else {
+                    LogResults.log("No valid entry found for FIFO eviction in TLB.");
+                }
+            }
+            else if(evictionAlgorithm instanceof OptimalReplacement) {
+                int optimalVpn = ((OptimalReplacement) evictionAlgorithm).getTLBOptimalPage(currentTLBEntries);
+                if (optimalVpn != -1 && entries.containsKey(optimalVpn)) {
+                    entries.remove(optimalVpn); // Remove the entry from the TLB
+                    // LogResults.log("Evicted VPN " + optimalVpn + " from TLB based on Optimal Replacement.");
+                } else {
+                    LogResults.log("No valid entry found for eviction in TLB using Optimal Replacement.");
+                }
+            }
         }
         // Add the new entry
         entries.put(vpn, new PageTableEntry(entry.getFrameNumber(), entry.isValid(), entry.isDirty(), entry.isReferenced(), entry.isDiskPage()));
-        evictionAlgorithm.addPage(vpn); // Add the page to the eviction algorithm
-        LogResults.log("Added VPN " + vpn + " to TLB: " + entry);
+        // evictionAlgorithm.updatePageAccess(vpn); // Add the page to the eviction algorithm
+        LogResults.log("Added VPN " + vpn + " to TLB");
+    }
+
+    /**
+     * Retrieves and removes the first VPN in the LinkedHashMap (FIFO order).
+     * @return The VPN of the first entry, or null if the TLB is empty.
+     */
+    private int getFirstEntryVPN() {
+        if (entries.isEmpty()) {
+            LogResults.log("TLB is empty, no entry to evict.");
+            return -1;
+        }
+        // LinkedHashMap maintains insertion order, so the first key is the oldest
+        return entries.keySet().iterator().next();
     }
 
     /**
@@ -111,11 +161,11 @@ public class TLB {
         return new LinkedHashMap<>(entries); // Return a copy of the entries
     }
 
-    /**
-     //     * Retrieves the page table entry for a given VPN if it exists and is valid.
-     //     * @param vpn The virtual page number (VPN).
-     //     * @return The corresponding page table entry, or null if not found or invalid.
-     //     */
+     /**
+     * Retrieves the page table entry for a given VPN if it exists and is valid.
+     * @param vpn The virtual page number (VPN).
+     * @return The corresponding page table entry, or null if not found or invalid.
+     */
     public PageTableEntry getEntry(int vpn) {
         PageTableEntry entry = entries.get(vpn);
         if (entry != null && entry.isValid()) {
@@ -128,16 +178,16 @@ public class TLB {
         return null;
     }
 
-//    /**
-//     * Checks if a given VPN is present in the TLB.
-//     * @param vpn The virtual page number (VPN).
-//     * @return True if the VPN is present, false otherwise.
-//     */
-//    public boolean containsEntry(int vpn) {
-//        boolean contains = entries.containsKey(vpn);
-//        LogResults.log("TLB contains VPN " + vpn + ": " + contains);
-//        return contains;
-//    }
+    /**
+     * Checks if a given VPN is present in the TLB.
+     * @param vpn The virtual page number (VPN).
+     * @return True if the VPN is present, false otherwise.
+     */
+    public boolean containsEntry(int vpn) {
+        boolean contains = entries.containsKey(vpn);
+        LogResults.log("TLB contains VPN " + vpn + ": " + contains);
+        return contains;
+    }
 //    /**
 //     * Checks if the page entry for the given VPN is dirty (modified).
 //     * @param vpn The virtual page number (VPN).
