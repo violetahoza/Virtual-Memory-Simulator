@@ -59,15 +59,6 @@ public class MemoryController {
                 break;
             case "Optimal":
                 algorithm = new OptimalReplacement();
-                Map<Integer, List<Integer>> futureReferences = new HashMap<>();
-                futureReferences.put(0, Arrays.asList(2, 6, 12)); // VPN 0 is accessed at steps 2, 6, and 12
-                futureReferences.put(1, Arrays.asList(4, 10, 15)); // VPN 1 is accessed at steps 4, 10, and 15
-                futureReferences.put(2, Arrays.asList(1, 5, 13));
-                futureReferences.put(3, Arrays.asList(3, 9, 14));
-                futureReferences.put(4, Arrays.asList(7, 11, 16));
-                futureReferences.put(5, Arrays.asList(8, 12, 17));
-                futureReferences.put(6, Arrays.asList(6, 10, 18));
-                memoryManager.setFutureReferences(futureReferences);
                 break;
             case "FIFO":
             default:

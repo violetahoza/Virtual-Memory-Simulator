@@ -2,9 +2,7 @@ package com.example.vms.model;
 
 import com.example.vms.utils.LogResults;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a page in virtual memory, storing data in offset-data pairs.
@@ -114,5 +112,17 @@ public class Page {
             output.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
         }
         return output.toString();
+    }
+
+    /**
+     * Returns a list of strings representing the contents of the page with offsets.
+     * @return A list of strings in the format "Offset: Data".
+     */
+    public List<String> getContentsWithOffsets() {
+        List<String> contents = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : pageContents.entrySet()) {
+            contents.add("Offset: " + entry.getKey() + " Data: " + entry.getValue());
+        }
+        return contents;
     }
 }

@@ -2,10 +2,7 @@ package com.example.vms.model;
 
 import com.example.vms.utils.LogResults;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages virtual memory by simulating the interaction between TLB (Translation Lookaside Buffer),
@@ -43,6 +40,18 @@ public class MemoryManager {
         this.pageTable = new PageTable(virtualMemorySize / pageSize);
         if(replacementAlgorithm instanceof NRUReplacement)
             replacementAlgorithm = new NRUReplacement(pageTable);
+        if(replacementAlgorithm instanceof OptimalReplacement)
+        {
+            Map<Integer, List<Integer>> futureReferences = new HashMap<>();
+            futureReferences.put(0, Arrays.asList(2, 6, 12)); // VPN 0 is accessed at steps 2, 6, and 12
+            futureReferences.put(1, Arrays.asList(4, 10, 15)); // VPN 1 is accessed at steps 4, 10, and 15
+            futureReferences.put(2, Arrays.asList(1, 5, 13));
+            futureReferences.put(3, Arrays.asList(3, 9, 14));
+            futureReferences.put(4, Arrays.asList(7, 11, 16));
+            futureReferences.put(5, Arrays.asList(8, 12, 17));
+            futureReferences.put(6, Arrays.asList(6, 10, 18));
+            setFutureReferences(futureReferences);
+        }
         this.replacementAlgorithm = replacementAlgorithm;
         this.tlb = new TLB(tlbSize, replacementAlgorithm);
         this.mainMemory = new MainMemory(physicalMemorySize / pageSize, pageSize);
@@ -118,29 +127,24 @@ public class MemoryManager {
     public void load(int virtualAddress) {
         if (virtualAddress < 0 || virtualAddress >= virtualMemorySize) {
             LogResults.log("Invalid virtual address " + virtualAddress);
+            //throw new IllegalArgumentException("Invalid virtual address " + virtualAddress);
             return;
         }
-
         int vpn = virtualAddress / pageSize;
         int offset = virtualAddress % pageSize;
-
         Address virtualAddr = new Address(vpn, offset);
         LogResults.log("\nAccess request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
-
         int ppn = tlb.lookup(vpn); // TLB lookup
         Results.tlbAccesses++;
         if (ppn != -1) {
             LogResults.log("TLB hit! Physical page number: " + ppn);
             Results.tlbHit++;
             loadFromMemory(new Address(ppn, offset));
-            incrementOperationCount(); // Increment operation count after a load
             return;
         }
-
         LogResults.log("TLB miss for virtual page nr: " + vpn);
         Results.tlbMiss++;
         handlePageTableLookup(vpn, offset);
-        incrementOperationCount(); // Increment operation count after a load
     }
 
     /**
@@ -160,7 +164,6 @@ public class MemoryManager {
             loadFromMemory(new Address(entry.getFrameNumber(), offset));
             return;
         }
-
         LogResults.log("Page table miss for virtual page number: " + vpn);
         Results.pageTableMiss++;
         if(handlePageFault(vpn) == -1)
@@ -179,26 +182,21 @@ public class MemoryManager {
             LogResults.log("Virtual address out of bounds: " + virtualAddress);
             return;
         }
-
         int vpn = virtualAddress / pageSize;
         int offset = virtualAddress % pageSize;
         Address virtualAddr = new Address(vpn, offset);
         LogResults.log("\nStore request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
-
         int ppn = tlb.lookup(vpn); // TLB lookup
         Results.tlbAccesses++;
         if (ppn != -1) {
             LogResults.log("TLB hit! Physical page number: " + ppn);
             Results.tlbHit++;
             storeToMemory(new Address(ppn, offset), data);
-            incrementOperationCount(); // Increment operation count after a load
             return;
         }
-
         LogResults.log("TLB miss for virtual page number: " + vpn);
         Results.tlbMiss++;
         handlePageTableLookupForStore(vpn, offset, data);
-        incrementOperationCount(); // Increment operation count after a load
     }
 
     /**
@@ -315,6 +313,7 @@ public class MemoryManager {
             pageTable.getEntry(vpn).setRefBit(true);  // Mark the referenced bit, since the page has been accessed
             replacementAlgorithm.updatePageAccess(vpn);
         }
+        incrementOperationCount(); // Increment operation count after a load
         LogResults.log("Loaded data: " + data + " from: " + physicalAddress.printAddress("Physical") + '\n');
     }
 
@@ -335,6 +334,7 @@ public class MemoryManager {
             tlb.getEntry(vpn).setRefBit(true);
             tlb.getEntry(vpn).setDirtyBit(true);
         }
+        incrementOperationCount(); // Increment operation count after a store
         LogResults.log("Stored data: " + data + " to: " + physicalAddress.printAddress("Physical") + '\n');
     }
 
