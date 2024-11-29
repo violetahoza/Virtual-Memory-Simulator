@@ -1,0 +1,22 @@
+{
+  "virtualAddressWidth": 12,
+  "pageSize": 64,
+  "tlbSize": 4,
+  "physicalMemorySize": 256,
+  "secondaryMemorySize": 512,
+  "replacementAlgorithm": "LRU",
+  "operations": [
+    { "type": "Allocate", "vpn": 0 },
+    { "type": "Allocate", "vpn": 1 },
+    { "type": "Allocate", "vpn": 2 },
+    { "type": "Load", "address": 128 },
+    { "type": "Allocate", "vpn": 3 },
+    { "type": "Store", "vpn": 0, "offset": 10, "data": 50 },
+    { "type": "Allocate", "vpn": 4 },
+    { "type": "Load", "address": 256 },
+    { "type": "Store", "vpn": 1, "offset": 5, "data": 100 },
+    { "type": "Allocate", "vpn": 5 },
+    { "type": "Store", "vpn": 2, "offset": 20, "data": 200 },
+    { "type": "Load", "address": 384 }
+  ]
+}

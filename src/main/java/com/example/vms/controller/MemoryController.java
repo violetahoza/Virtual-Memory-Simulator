@@ -1,13 +1,20 @@
 package com.example.vms.controller;
 
 import com.example.vms.model.*;
+import com.example.vms.utils.ConfigLoader;
 import com.example.vms.utils.LogResults;
+import com.example.vms.utils.Operation;
+import com.example.vms.utils.SimulationConfig;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -17,8 +24,10 @@ import java.util.*;
 @Controller
 @SessionAttributes({"loadAddress", "storeAddress", "storeData"})
 public class MemoryController {
+    @Autowired
+    private HttpSession session;
     private MemoryManager memoryManager;
-    private String currentReplacementAlgorithm = "FIFO";  // Store current algorithm for display
+    private String replacementAlgorithm = "FIFO";  // Store current algorithm for display
     private int virtualAddressWidth;
     private int pageSize;
     private int tlbSize;
@@ -79,7 +88,7 @@ public class MemoryController {
                 this.pageSize = pageSize;
                 this.tlbSize = tlbSize;
                 this.physicalMemorySize = physicalMemorySize;
-                this.currentReplacementAlgorithm = replacementAlgorithm;
+                this.replacementAlgorithm = replacementAlgorithm;
                 this.secondaryMemorySize = diskSize;
                 this.virtualMemorySize = (int) Math.pow(2, virtualAddressWidth);
                 this.pageTableSize = (int) (virtualMemorySize / pageSize);
@@ -118,14 +127,13 @@ public class MemoryController {
         model.addAttribute("tlbSize", tlbSize);
         model.addAttribute("physicalMemorySize", physicalMemorySize);
         model.addAttribute("secondaryMemorySize", secondaryMemorySize);
-        model.addAttribute("replacementAlgorithm", currentReplacementAlgorithm);
+        model.addAttribute("replacementAlgorithm", replacementAlgorithm);
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);
 
         // Memory data
         model.addAttribute("tlbEntries", memoryManager.getTlb().getEntries());
         model.addAttribute("mainMemory", memoryManager.getMainMemory().getMemory());
-        // model.addAttribute("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
         model.addAttribute("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         model.addAttribute("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
         model.addAttribute("logMessages", logMessages);
@@ -140,11 +148,21 @@ public class MemoryController {
         if (!model.containsAttribute("storeData"))
             model.addAttribute("storeData", 0);
 
+        // Load configuration files from the configurations folder
+        File configDirectory = new File("src/main/resources/configurations");
+        if (configDirectory.exists() && configDirectory.isDirectory()) {
+            String[] configFiles = configDirectory.list((dir, name) -> name.endsWith(".json")); // JSON config files
+            if (configFiles != null) {
+                model.addAttribute("configFiles", Arrays.asList(configFiles));
+            }
+        }
+
         return "index";
     }
 
     /**
      * Configures the simulation with the specified parameters and updates the memory manager.
+     //* @param configFile the path to the configuration file
      * @param virtualAddressWidth the virtual address width
      * @param pageSize the page size
      * @param tlbSize the TLB size
@@ -156,16 +174,18 @@ public class MemoryController {
      */
     @PostMapping("/configure")
     public String configureSimulation(
-            @RequestParam("virtualAddressWidth") int virtualAddressWidth,
-            @RequestParam("pageSize") int pageSize,
-            @RequestParam("tlbSize") int tlbSize,
-            @RequestParam("physicalMemorySize") int physicalMemorySize,
-            @RequestParam("secondaryMemorySize") int secondaryMemorySize,
-            @RequestParam("replacementAlgorithm") String replacementAlgorithm,
+            //@RequestParam(value = "configFile", required = false) String configFile,
+            @RequestParam(value = "virtualAddressWidth", required = false) Integer virtualAddressWidth,
+            @RequestParam(value = "pageSize", required = false) int pageSize,
+            @RequestParam(value = "tlbSize", required = false) int tlbSize,
+            @RequestParam(value = "physicalMemorySize", required = false) int physicalMemorySize,
+            @RequestParam(value = "secondaryMemorySize", required = false) int secondaryMemorySize,
+            @RequestParam(value = "replacementAlgorithm", required = false) String replacementAlgorithm,
             Model model) {
         Results.logStats();
         logMessages.clear();
         Results.reset();
+
         // Initialize MemoryManager with user-configured parameters
         initializeMemoryManager(virtualAddressWidth, pageSize, tlbSize, physicalMemorySize, secondaryMemorySize, replacementAlgorithm);
 
@@ -184,6 +204,103 @@ public class MemoryController {
                 ", physicalMemorySize: " + physicalMemorySize + " secondaryMemorySize: " + secondaryMemorySize + '\n');
 
         return "redirect:/";
+    }
+
+    @GetMapping("/loadConfig")
+    public String loadConfiguration(@RequestParam(value = "configFile", required = false) String configFile, Model model) {
+        Results.logStats();
+        logMessages.clear();
+        Results.reset();
+
+        if (configFile == null || configFile.isEmpty()) {
+            logMessages.add("Error: Missing configFile parameter");
+            return "redirect:/";
+        }
+        try {
+            SimulationConfig selectedConfig = ConfigLoader.loadConfigFromFile("src/main/resources/configurations/" + configFile);
+            if (selectedConfig != null) {
+                // Initialize the memory manager with the selected configuration
+                initializeMemoryManager(
+                        selectedConfig.getVirtualAddressWidth(),
+                        selectedConfig.getPageSize(),
+                        selectedConfig.getTlbSize(),
+                        selectedConfig.getPhysicalMemorySize(),
+                        selectedConfig.getSecondaryMemorySize(),
+                        selectedConfig.getReplacementAlgorithm()
+                );
+
+                // Update the model attributes for rendering
+                model.addAttribute("virtualAddressWidth", selectedConfig.getVirtualAddressWidth());
+                model.addAttribute("pageSize", selectedConfig.getPageSize());
+                model.addAttribute("tlbSize", selectedConfig.getTlbSize());
+                model.addAttribute("physicalMemorySize", selectedConfig.getPhysicalMemorySize());
+                model.addAttribute("secondaryMemorySize", selectedConfig.getSecondaryMemorySize());
+                model.addAttribute("replacementAlgorithm", selectedConfig.getReplacementAlgorithm());
+                model.addAttribute("virtualMemorySize", virtualMemorySize);
+                model.addAttribute("pageTableSize", pageTableSize);
+
+                // Store the operations list and initialize the current step in the session
+                session.setAttribute("operations", selectedConfig.getOperations());
+                session.setAttribute("currentStep", 0);  // Set the starting point for operations
+
+                logMessages.add("Configuration loaded successfully from " + configFile);
+            } else {
+                logMessages.add("Error: Configuration file not found or invalid");
+            }
+        } catch (Exception e) {
+            logMessages.add("Error loading configuration: " + e.getMessage());
+        }
+
+        return "redirect:/"; // Redirect back to the main page
+    }
+
+    // Handle next operation step
+    @GetMapping("/nextOperation")
+    public String nextOperation(Model model) {
+        logMessages.clear();
+        // Get operations and current step from the session
+        List<Operation> operations = (List<Operation>) session.getAttribute("operations");
+        Integer currentStep = (Integer) session.getAttribute("currentStep");
+
+        // If operations are completed
+        if (operations == null || currentStep == null || currentStep >= operations.size()) {
+            logMessages.add("All operations are completed.");
+            model.addAttribute("logMessages", logMessages);
+            return "redirect:/";  // Redirect after all operations
+        }
+
+        // Get the current operation to perform
+        Operation operation = operations.get(currentStep);
+
+        // Execute the operation
+        switch (operation.getType()) {
+            case "Allocate":
+                memoryManager.allocatePage(operation.getVpn());
+                logMessages.add("Allocated page: " + operation.getVpn());
+                break;
+
+            case "Load":
+                memoryManager.load(operation.getAddress());
+                logMessages.add("Loaded address: " + operation.getAddress());
+                break;
+
+            case "Store":
+                int address = operation.getVpn() * pageSize + operation.getOffset();
+                memoryManager.store(address, operation.getData());
+                logMessages.add("Stored data " + operation.getData() + " at address: " + address);
+                break;
+
+            default:
+                logMessages.add("Unknown operation type: " + operation.getType());
+        }
+
+        // Update the current step in the session
+        session.setAttribute("currentStep", currentStep + 1);
+
+        // Add log messages to the model for the view
+        model.addAttribute("logMessages", logMessages);
+
+        return "redirect:/";  // Redirect back to the main page
     }
 
     /**
@@ -309,7 +426,6 @@ public class MemoryController {
         Map<String, Object> data = new HashMap<>();
         data.put("tlbEntries", memoryManager.getTlb().getTLBContents());
         data.put("mainMemory", memoryManager.getMainMemory().getMemory());
-        //data.put("virtualMemoryEntries", memoryManager.getVirtualMemoryEntries());
         data.put("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
         return data;

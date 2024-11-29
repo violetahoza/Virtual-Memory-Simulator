@@ -115,7 +115,7 @@
             <div class="card">
                 <div class="card-header"> <h4>System Parameters Configuration</h4> </div>
                 <div class="card-body">
-                    <form action="/configure" method="post">
+                    <form id="configForm" action="/configure" method="post">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="virtualAddressWidth">Virtual Address Width (bits):</label>
@@ -160,6 +160,31 @@
                         <button type="submit" formaction="/configure" class="btn btn-custom"><i class="fa fa-cogs icon"></i> Configure</button>
                         <button type="submit" formaction="/reset" class="btn btn-custom"><i class="fa fa-refresh icon"></i> Reset</button>
                     </form>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-start align-items-center gap-3">
+                                <form id="loadConfig" action="/loadConfig" method="get" class="d-flex align-items-center">
+                                    <div class="form-group me-2">
+                                        <label for="configFile">Configuration: </label>
+                                        <select name="configFile" id="configFile" class="form-control" onchange="loadConfiguration()">
+                                            <option value="none" selected>No Configuration</option>
+                                            <option th:each="config : ${configFiles}" th:value="${config}" th:text="${config}"></option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" formaction="/loadConfig" class="btn btn-custom btn-sm">
+                                        <i class="fa fa-upload me-2"></i>Load Configuration
+                                    </button>
+                                </form>
+
+                                <form action="/nextOperation" method="get" class="d-flex align-items-center">
+                                    <button id="nextStepBtn" type="submit" class="btn btn-custom btn-sm" onclick="executeNextStep()">
+                                        <i class="fa fa-play me-2"></i>Execute Next Operation
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -182,23 +207,6 @@
             </div>
         </div>
 
-<!--        <div class="col-md-4">-->
-<!--            <div class="card">-->
-<!--                <div class="card-header">-->
-<!--                    <h4>Load Configuration</h4>-->
-<!--                </div>-->
-<!--                <div class="card-body">-->
-<!--                    <form action="/loadConfig" method="post">-->
-<!--                        <div class="form-group">-->
-<!--                            <label for="filePath">Configuration File Path:</label>-->
-<!--                            <input type="text" class="form-control" id="filePath" name="filePath" placeholder="Enter path to config file" required>-->
-<!--                        </div>-->
-<!--                        <button type="submit" class="btn btn-custom">Load Configuration</button>-->
-<!--                    </form>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header"><h4>Simulation Messages</h4></div>
@@ -216,6 +224,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="row">
@@ -328,7 +337,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h4>Secondary Storage (Disk)</h4>
+                    <h4>Secondary Storage</h4>
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered" id="diskTable">
@@ -388,31 +397,6 @@
                 </div>
             </div>
         </div>
-        <!--        <div class="col-md-3">-->
-        <!--            <div class="card">-->
-        <!--                <div class="card-header">-->
-        <!--                    <h4>Virtual Memory</h4>-->
-        <!--                </div>-->
-        <!--                <div class="card-body">-->
-        <!--                    <table class="table table-bordered virtual-memory-table">-->
-        <!--                        <thead>-->
-        <!--                        <tr>-->
-        <!--                            <th>VPN</th>-->
-        <!--                            <th>Data</th>-->
-        <!--                            <th>Allocated</th>-->
-        <!--                        </tr>-->
-        <!--                        </thead>-->
-        <!--                        <tbody id="virtualMemoryBody">-->
-        <!--                        <tr th:each="entry : ${virtualMemoryEntries}">-->
-        <!--                            <td th:text="${entry.vpn}"></td>-->
-        <!--                            <td th:text="${entry.data}"></td>-->
-        <!--                            <td th:text="${entry.allocated ? 'Yes' : 'No'}"></td>-->
-        <!--                        </tr>-->
-        <!--                        </tbody>-->
-        <!--                    </table>-->
-        <!--                </div>-->
-        <!--            </div>-->
-        <!--        </div>-->
     </div>
 </div>
 
@@ -538,10 +522,107 @@
             logMessage(message);
         });
     };
-    // function clearMessages() {
-    //     const messageList = document.getElementById('simulationMessagesList');
-    //     messageList.innerHTML = '';
-    // }
+    function clearMessages() {
+        const messageList = document.getElementById('simulationMessagesList');
+        messageList.innerHTML = '';
+    }
+
+    // Fetch configurations dynamically and populate the dropdown
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/getConfigFiles')
+            .then(response => response.json())
+            .then(configs => {
+                const configDropdown = document.getElementById('configFile');
+                configs.forEach(config => {
+                    const option = document.createElement('option');
+                    option.value = config;
+                    option.textContent = config;
+                    configDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching configuration files:', error));
+    });
+
+    // Handle change in configuration selection
+    function loadConfiguration() {
+        const selectedConfig = document.getElementById("configFile").value;
+
+        if (selectedConfig !== 'none') {
+            // Fetch and populate fields for the selected configuration
+            fetch(`/loadConfig?configFile=${encodeURIComponent(selectedConfig)}`)
+                .then(response => response.json())
+                .then(config => {
+                    if (config.error) {
+                        console.error('Error:', config.error);
+                    } else {
+                        document.getElementById("virtualAddressWidth").value = config.virtualAddressWidth || '';
+                        document.getElementById("pageSize").value = config.pageSize || '';
+                        document.getElementById("tlbSize").value = config.tlbSize || '';
+                        document.getElementById("physicalMemorySize").value = config.physicalMemorySize || '';
+                        document.getElementById("secondaryMemorySize").value = config.secondaryMemorySize || '';
+                        document.getElementById("replacementAlgorithm").value = config.replacementAlgorithm || '';
+
+                        toggleFields(false); // Lock fields
+                    }
+                })
+                .catch(error => console.error('Error fetching configuration:', error));
+        } else {
+            // Clear fields and unlock for manual editing
+            clearFields();
+            toggleFields(true);
+        }
+    }
+    // Clear all input fields
+    function clearFields() {
+        const fields = [
+            "virtualAddressWidth",
+            "pageSize",
+            "tlbSize",
+            "physicalMemorySize",
+            "secondaryMemorySize",
+            "replacementAlgorithm"
+        ];
+        fields.forEach(field => {
+            document.getElementById(field).value = '';
+        });
+    }
+    // Function to toggle whether fields are editable or not
+    function toggleFields(enable) {
+        const fields = [
+            "virtualAddressWidth",
+            "pageSize",
+            "tlbSize",
+            "physicalMemorySize",
+            "secondaryMemorySize",
+            "replacementAlgorithm"
+        ];
+        fields.forEach(field => {
+            document.getElementById(field).disabled = !enable;
+        });
+    }
+
+    function executeNextStep() {
+        // Disable the button to prevent multiple clicks during operation
+        document.getElementById('nextStepBtn').disabled = true;
+
+        // Make an AJAX call to the server to process the next operation
+        fetch("/nextOperation")
+            .then(response => response.redirected ? window.location.href = response.url : response.json())
+            .then(data => {
+                // If there are still operations left, delay the next step
+                if (data && data.hasMoreOperations) {
+                    // Delay the next operation by 1 second (or any value you prefer)
+                    setTimeout(executeNextStep, 1000);
+                } else {
+                    //alert("All operations completed.");
+                    document.getElementById('nextStepBtn').disabled = false;  // Enable button
+                }
+            })
+            .catch(error => {
+                console.error('Error during next operation execution:', error);
+                document.getElementById('nextStepBtn').disabled = false;  // Enable button
+            });
+    }
 </script>
 </body>
 </html>
