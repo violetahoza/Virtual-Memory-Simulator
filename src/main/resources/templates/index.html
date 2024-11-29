@@ -182,6 +182,23 @@
             </div>
         </div>
 
+<!--        <div class="col-md-4">-->
+<!--            <div class="card">-->
+<!--                <div class="card-header">-->
+<!--                    <h4>Load Configuration</h4>-->
+<!--                </div>-->
+<!--                <div class="card-body">-->
+<!--                    <form action="/loadConfig" method="post">-->
+<!--                        <div class="form-group">-->
+<!--                            <label for="filePath">Configuration File Path:</label>-->
+<!--                            <input type="text" class="form-control" id="filePath" name="filePath" placeholder="Enter path to config file" required>-->
+<!--                        </div>-->
+<!--                        <button type="submit" class="btn btn-custom">Load Configuration</button>-->
+<!--                    </form>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header"><h4>Simulation Messages</h4></div>
@@ -285,12 +302,22 @@
                         <tr>
                             <th>Frame</th>
                             <th>Data</th>
+                            <th>Physical Address</th>
                         </tr>
                         </thead>
                         <tbody id="physicalMemoryEntries">
                         <tr th:each="entry : ${mainMemory}">
                             <td th:text="${entry.key}"></td>
-                            <td th:text="${entry.value.printContents()}"></td>
+                            <td>
+                                <div th:each="dataEntry : ${entry.value.getContentsWithOffsets()}">
+                                    <span th:text="${dataEntry}"></span><br/>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:each="dataEntry, iterStat : ${entry.value.getContentsWithOffsets()}">
+                                    <span th:text="${entry.key * pageSize + iterStat.index}"></span>
+                                </div>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
@@ -301,7 +328,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h4>Disk</h4>
+                    <h4>Secondary Storage (Disk)</h4>
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered" id="diskTable">
@@ -309,18 +336,29 @@
                         <tr>
                             <th>VPN</th>
                             <th>Data</th>
+                            <th>Virtual Address</th>
                         </tr>
                         </thead>
-                        <tbody id="diskBody">
+                        <tbody id="diskEntries">
                         <tr th:each="entry : ${diskEntries}">
                             <td th:text="${entry.key}"></td>
-                            <td th:text="${entry.value.printContents()}"></td>
+                            <td>
+                                <div th:each="dataEntry : ${entry.value.getContentsWithOffsets()}">
+                                    <span th:text="${dataEntry}"></span><br/>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:each="dataEntry, iterStat : ${entry.value.getContentsWithOffsets()}">
+                                    <span th:text="${entry.key * pageSize + iterStat.index}"></span>
+                                </div>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
