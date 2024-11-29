@@ -4,6 +4,36 @@ Main memory initialized with 0 frames, each of size 0 bytes.
 Secondary storage initialized with max pages: 0 and page size: 0
 FIFO replacement algorithm initialized with max size: 0
 TLB initialized with size: 0 and eviction algorithm: FIFOReplacement
+Main memory contents (size: 0):
+----------------------
+Disk contents:
+----------------------
+----------------------
+TLB contents:
+----------------------
+----------------------
+Page table contents:
+----------------------
+----------------------
+
+TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
+Page table hits: 0 Page table misses: 0 Page table accesses: 0
+TLB Hit Rate: 0.0%
+TLB Miss Rate: 0.0%
+Page Table Hit Rate: 0.0%
+Page Table Miss Rate: 0.0%
+Disk Reads: 0
+Disk Writes: 0
+Page Evictions: 0
+
+Page table initialized with size: 0
+Main memory initialized with 0 frames, each of size 0 bytes.
+Secondary storage initialized with max pages: 0 and page size: 0
+FIFO replacement algorithm initialized with max size: 0
+TLB initialized with size: 0 and eviction algorithm: FIFOReplacement
+
+Simulation reset.
+
 
 TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
 Page table hits: 0 Page table misses: 0 Page table accesses: 0
@@ -16,10 +46,10 @@ Disk Writes: 0
 Page Evictions: 0
 
 LRU replacement algorithm initialized
-Page table initialized with size: 32
-TLB initialized with size: 10 and eviction algorithm: LRUReplacement
-Main memory initialized with 16 frames, each of size 32 bytes.
-Secondary storage initialized with max pages: 32 and page size: 32
+Page table initialized with size: 64
+TLB initialized with size: 4 and eviction algorithm: LRUReplacement
+Main memory initialized with 4 frames, each of size 64 bytes.
+Secondary storage initialized with max pages: 8 and page size: 64
 
 TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
 Page table hits: 0 Page table misses: 0 Page table accesses: 0
@@ -32,15 +62,26 @@ Disk Writes: 0
 Page Evictions: 0
 
 LRU replacement algorithm initialized
-Page table initialized with size: 32
-TLB initialized with size: 10 and eviction algorithm: LRUReplacement
-Main memory initialized with 16 frames, each of size 32 bytes.
-Secondary storage initialized with max pages: 32 and page size: 32
+Page table initialized with size: 64
+TLB initialized with size: 4 and eviction algorithm: LRUReplacement
+Main memory initialized with 4 frames, each of size 64 bytes.
+Secondary storage initialized with max pages: 8 and page size: 64
 Page with VPN 0 successfully loaded into frame 0
 Updated access for VPN 0 with access time 1
 
 Stored a copy of VPN 0 in secondary storage.
 Mapped VPN 0 to frame 0 in main memory.
+
+
+TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
+Page table hits: 0 Page table misses: 0 Page table accesses: 0
+TLB Hit Rate: 0.0%
+TLB Miss Rate: 0.0%
+Page Table Hit Rate: 0.0%
+Page Table Miss Rate: 0.0%
+Disk Reads: 0
+Disk Writes: 0
+Page Evictions: 0
 
 Page with VPN 1 successfully loaded into frame 1
 Updated access for VPN 1 with access time 2
@@ -48,18 +89,6 @@ Updated access for VPN 1 with access time 2
 Stored a copy of VPN 1 in secondary storage.
 Mapped VPN 1 to frame 1 in main memory.
 
-Page with VPN 2 successfully loaded into frame 2
-Updated access for VPN 2 with access time 3
-
-Stored a copy of VPN 2 in secondary storage.
-Mapped VPN 2 to frame 2 in main memory.
-
-Page with VPN 3 successfully loaded into frame 3
-Updated access for VPN 3 with access time 4
-
-Stored a copy of VPN 3 in secondary storage.
-Mapped VPN 3 to frame 3 in main memory.
-
 
 TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
 Page table hits: 0 Page table misses: 0 Page table accesses: 0
@@ -83,10 +112,10 @@ Disk Writes: 0
 Page Evictions: 0
 
 LRU replacement algorithm initialized
-Page table initialized with size: 32
-TLB initialized with size: 10 and eviction algorithm: LRUReplacement
-Main memory initialized with 16 frames, each of size 32 bytes.
-Secondary storage initialized with max pages: 32 and page size: 32
+Page table initialized with size: 64
+TLB initialized with size: 4 and eviction algorithm: LRUReplacement
+Main memory initialized with 4 frames, each of size 64 bytes.
+Secondary storage initialized with max pages: 8 and page size: 64
 
 TLB Hits: 0 TlB Misses: 0 TLB Accesses: 0
 Page table hits: 0 Page table misses: 0 Page table accesses: 0
@@ -99,31 +128,7 @@ Disk Writes: 0
 Page Evictions: 0
 
 LRU replacement algorithm initialized
-Page table initialized with size: 32
-TLB initialized with size: 10 and eviction algorithm: LRUReplacement
-Main memory initialized with 16 frames, each of size 32 bytes.
-Secondary storage initialized with max pages: 32 and page size: 32
-Page with VPN 0 successfully loaded into frame 0
-Updated access for VPN 0 with access time 1
-
-Stored a copy of VPN 0 in secondary storage.
-Mapped VPN 0 to frame 0 in main memory.
-
-Page with VPN 1 successfully loaded into frame 1
-Updated access for VPN 1 with access time 2
-
-Stored a copy of VPN 1 in secondary storage.
-Mapped VPN 1 to frame 1 in main memory.
-
-Page with VPN 2 successfully loaded into frame 2
-Updated access for VPN 2 with access time 3
-
-Stored a copy of VPN 2 in secondary storage.
-Mapped VPN 2 to frame 2 in main memory.
-
-Page with VPN 3 successfully loaded into frame 3
-Updated access for VPN 3 with access time 4
-
-Stored a copy of VPN 3 in secondary storage.
-Mapped VPN 3 to frame 3 in main memory.
-
+Page table initialized with size: 64
+TLB initialized with size: 4 and eviction algorithm: LRUReplacement
+Main memory initialized with 4 frames, each of size 64 bytes.
+Secondary storage initialized with max pages: 8 and page size: 64
