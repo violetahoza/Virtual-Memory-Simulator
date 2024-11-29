@@ -206,12 +206,17 @@ public class MemoryController {
         return "redirect:/";
     }
 
+    /**
+     * Loads the configuration from a selected file and initializes the memory manager.
+     * @param configFile The name of the configuration file to load.
+     * @param model The model to hold attributes for rendering on the view.
+     * @return A redirection to the main page after configuration loading.
+     */
     @GetMapping("/loadConfig")
     public String loadConfiguration(@RequestParam(value = "configFile", required = false) String configFile, Model model) {
         Results.logStats();
         logMessages.clear();
         Results.reset();
-
         if (configFile == null || configFile.isEmpty()) {
             logMessages.add("Error: Missing configFile parameter");
             return "redirect:/";
@@ -228,7 +233,6 @@ public class MemoryController {
                         selectedConfig.getSecondaryMemorySize(),
                         selectedConfig.getReplacementAlgorithm()
                 );
-
                 // Update the model attributes for rendering
                 model.addAttribute("virtualAddressWidth", selectedConfig.getVirtualAddressWidth());
                 model.addAttribute("pageSize", selectedConfig.getPageSize());
@@ -238,11 +242,9 @@ public class MemoryController {
                 model.addAttribute("replacementAlgorithm", selectedConfig.getReplacementAlgorithm());
                 model.addAttribute("virtualMemorySize", virtualMemorySize);
                 model.addAttribute("pageTableSize", pageTableSize);
-
                 // Store the operations list and initialize the current step in the session
                 session.setAttribute("operations", selectedConfig.getOperations());
                 session.setAttribute("currentStep", 0);  // Set the starting point for operations
-
                 logMessages.add("Configuration loaded successfully from " + configFile);
             } else {
                 logMessages.add("Error: Configuration file not found or invalid");
@@ -250,56 +252,50 @@ public class MemoryController {
         } catch (Exception e) {
             logMessages.add("Error loading configuration: " + e.getMessage());
         }
-
         return "redirect:/"; // Redirect back to the main page
     }
 
-    // Handle next operation step
-    @GetMapping("/nextOperation")
+    /**
+     * Executes the next operation in the sequence (Allocate, Load, Store).
+     * Updates the current step in the session and handles page eviction if needed.
+     * @param model The model to hold log messages and updates for rendering on the view.
+     * @return A redirection to the main page after performing the operation.
+     */    @GetMapping("/nextOperation")
     public String nextOperation(Model model) {
         logMessages.clear();
         // Get operations and current step from the session
         List<Operation> operations = (List<Operation>) session.getAttribute("operations");
         Integer currentStep = (Integer) session.getAttribute("currentStep");
-
         // If operations are completed
         if (operations == null || currentStep == null || currentStep >= operations.size()) {
             logMessages.add("All operations are completed.");
             model.addAttribute("logMessages", logMessages);
             return "redirect:/";  // Redirect after all operations
         }
-
         // Get the current operation to perform
         Operation operation = operations.get(currentStep);
-
         // Execute the operation
         switch (operation.getType()) {
             case "Allocate":
                 memoryManager.allocatePage(operation.getVpn());
                 logMessages.add("Allocated page: " + operation.getVpn());
                 break;
-
             case "Load":
                 memoryManager.load(operation.getAddress());
                 logMessages.add("Loaded address: " + operation.getAddress());
                 break;
-
             case "Store":
                 int address = operation.getVpn() * pageSize + operation.getOffset();
                 memoryManager.store(address, operation.getData());
                 logMessages.add("Stored data " + operation.getData() + " at address: " + address);
                 break;
-
             default:
                 logMessages.add("Unknown operation type: " + operation.getType());
         }
-
         // Update the current step in the session
         session.setAttribute("currentStep", currentStep + 1);
-
         // Add log messages to the model for the view
         model.addAttribute("logMessages", logMessages);
-
         return "redirect:/";  // Redirect back to the main page
     }
 

@@ -12,48 +12,45 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class responsible for loading configuration files.
+ * Class responsible for loading configuration files and fetching available configuration file names.
+ * Provides methods for loading configuration files in JSON format and listing available configuration files.
  */
 public class ConfigLoader {
-
+    // Jackson ObjectMapper for reading and writing JSON
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Loads all available configuration files from a directory.
-     * @param configDir the directory where configuration files are stored
-     * @return a list of configuration file names
-     * @throws IOException if there's an error reading the directory or files
-     */
-    public static List<String> loadConfigFiles(String configDir) throws IOException {
-        File directory = new File(configDir);
-        if (!directory.exists() || !directory.isDirectory()) {
-            throw new IOException("Directory not found: " + configDir);
-        }
-        File[] files = directory.listFiles((dir, name) -> name.endsWith(".json"));
-        if (files != null) {
-            return Arrays.stream(files).map(File::getName).collect(Collectors.toList());
-        } else {
-            throw new IOException("No configuration files found in: " + configDir);
-        }
-    }
-
-    /**
      * Loads a configuration from the specified JSON file.
-     * @param configFile the path to the configuration file
-     * @return the loaded SimulationConfig object
-     * @throws IOException if there's an error while reading the file
+     * This method deserializes the contents of the JSON configuration file into a {@link SimulationConfig} object.
+     *
+     * @param configFile the path to the configuration file to load
+     * @return the loaded {@link SimulationConfig} object
+     * @throws IOException if there is an error reading the file or parsing the JSON
      */
     public static SimulationConfig loadConfigFromFile(String configFile) throws IOException {
+        // Create a File object for the given configuration file
         File file = new File(configFile);
+
+        // Deserialize the file content into a SimulationConfig object using Jackson's ObjectMapper
         return objectMapper.readValue(file, SimulationConfig.class);
     }
 
+    /**
+     * Retrieves a list of available configuration files in the configurations folder.
+     * This method searches for all files with the ".json" extension in the "src/main/resources/configurations" directory.
+     *
+     * @return a list of filenames (with ".json" extension) of configuration files available in the folder
+     */
     @GetMapping("/getConfigFiles")
     @ResponseBody
     public List<String> getConfigFiles() {
+        // Define the folder containing the configuration files
         File folder = new File("src/main/resources/configurations");
+
+        // Get the list of files in the folder that have a ".json" extension
         File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+
+        // If files exist, return the list of filenames, else return an empty list
         return files != null ? Arrays.stream(files).map(File::getName).collect(Collectors.toList()) : new ArrayList<>();
     }
-
 }

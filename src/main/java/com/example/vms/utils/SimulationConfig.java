@@ -2,6 +2,12 @@ package com.example.vms.utils;
 
 import java.util.List;
 
+/**
+ * Represents the configuration for the virtual memory simulation.
+ * This class holds the system configuration details like virtual address width,
+ * page size, TLB size, physical and secondary memory size, and the replacement algorithm.
+ * It also contains a list of operations that are part of the simulation process.
+ */
 public class SimulationConfig {
     private Integer virtualAddressWidth;
     private Integer pageSize;
@@ -9,7 +15,7 @@ public class SimulationConfig {
     private Integer physicalMemorySize;
     private Integer secondaryMemorySize;
     private String replacementAlgorithm;
-    private List<Operation> operations; // List of predefined operations like "load", "store", etc.
+    private List<Operation> operations; // List of predefined operations like "Load", "Store", "Allocate".
 
     // Getters and setters
     public int getVirtualAddressWidth() { return virtualAddressWidth; }
