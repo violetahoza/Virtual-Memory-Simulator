@@ -4,6 +4,7 @@ Main memory initialized with 0 frames, each of size 0 bytes.
 Secondary storage initialized with max pages: 0 and page size: 0
 FIFO replacement algorithm initialized with max size: 0
 TLB initialized with size: 0 and eviction algorithm: FIFOReplacement
+<<<<<<< HEAD
 Main memory contents (size: 0):
 ----------------------
 Disk contents:
@@ -132,3 +133,6 @@ Page table initialized with size: 64
 TLB initialized with size: 4 and eviction algorithm: LRUReplacement
 Main memory initialized with 4 frames, each of size 64 bytes.
 Secondary storage initialized with max pages: 8 and page size: 64
+=======
+Invalid virtual address 0
+>>>>>>> 2accb40833c98bb1d85e40825a5d105365b7c8a0
