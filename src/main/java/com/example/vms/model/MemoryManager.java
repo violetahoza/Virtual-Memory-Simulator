@@ -42,15 +42,8 @@ public class MemoryManager {
             replacementAlgorithm = new NRUReplacement(pageTable);
         if(replacementAlgorithm instanceof OptimalReplacement)
         {
-            Map<Integer, List<Integer>> futureReferences = new HashMap<>();
-            futureReferences.put(0, Arrays.asList(2, 6, 12)); // VPN 0 is accessed at steps 2, 6, and 12
-            futureReferences.put(1, Arrays.asList(4, 10, 15)); // VPN 1 is accessed at steps 4, 10, and 15
-            futureReferences.put(2, Arrays.asList(1, 5, 13));
-            futureReferences.put(3, Arrays.asList(3, 9, 14));
-            futureReferences.put(4, Arrays.asList(7, 11, 16));
-            futureReferences.put(5, Arrays.asList(8, 12, 17));
-            futureReferences.put(6, Arrays.asList(6, 10, 18));
-            setFutureReferences(futureReferences);
+            List<Integer> futureAccesses = Arrays.asList(1, 4, 0, 1, 2, 3, 5, 6);
+            ((OptimalReplacement) replacementAlgorithm).setFutureAccesses(futureAccesses);
         }
         this.replacementAlgorithm = replacementAlgorithm;
         this.tlb = new TLB(tlbSize, replacementAlgorithm);
@@ -362,19 +355,6 @@ public class MemoryManager {
     }
 
     /**
-     * Sets the future memory access references for the Optimal Replacement algorithm.
-     * It must be called before the eviction process to enable the Optimal Replacement algorithm to
-     * make decisions based on future memory accesses.
-     * @param futureReferences A map where the key is the Virtual Page Number (VPN) and the value is a list of future access steps.
-     */
-    public void setFutureReferences(Map<Integer, List<Integer>> futureReferences) {
-        if (replacementAlgorithm instanceof OptimalReplacement) {
-            ((OptimalReplacement) replacementAlgorithm).setFutureReferences(futureReferences);
-            LogResults.log("Future references set for optimal replacement.");
-        }
-    }
-
-    /**
      * Prints the contents of the main memory, secondary storage, TLB, and page table.
      */
     public void printMemoryContents() {
@@ -388,4 +368,17 @@ public class MemoryManager {
     public TLB getTlb() { return tlb; } // gets the current instance of the TLB
     public PageTable getPageTable() { return pageTable; } // gets the current instance of the  page table
     public SecondaryStorage getSecondaryStorage() { return secondaryStorage; } // gets the current instance of the disk
+
+    //    /**
+//     * Sets the future memory access references for the Optimal Replacement algorithm.
+//     * It must be called before the eviction process to enable the Optimal Replacement algorithm to
+//     * make decisions based on future memory accesses.
+//     * @param futureReferences A map where the key is the Virtual Page Number (VPN) and the value is a list of future access steps.
+//     */
+//    public void setFutureReferences(Map<Integer, List<Integer>> futureReferences) {
+//        if (replacementAlgorithm instanceof OptimalReplacement) {
+//            ((OptimalReplacement) replacementAlgorithm).setFutureReferences(futureReferences);
+//            LogResults.log("Future references set for optimal replacement.");
+//        }
+//    }
 }

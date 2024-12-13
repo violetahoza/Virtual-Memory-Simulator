@@ -77,21 +77,6 @@ public class Page {
     }
 
     /**
-     * Retrieves a copy of the current page contents.
-     * The copy prevents direct modification of the original page data.
-     *
-     * @return a map containing the offset-data pairs of the page
-     */
-    public Map<Integer, Integer> getPageContents() {
-        // Create a copy to protect original page contents from modification
-        Map<Integer, Integer> pageCopy = new HashMap<>();
-        for (Map.Entry<Integer, Integer> e : pageContents.entrySet()) {
-            pageCopy.put(e.getKey(), e.getValue()); // make a copy of the page so the user cannot modify the page's actual data in memory
-        }
-        return pageCopy; // return a copy of the page contents
-    }
-
-    /**
      * Creates and returns a copy of the current Page object.
      * This includes both the page size and the page contents.
      *
@@ -112,6 +97,21 @@ public class Page {
             output.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
         }
         return output.toString();
+    }
+
+    /**
+     * Retrieves a copy of the current page contents.
+     * The copy prevents direct modification of the original page data.
+     *
+     * @return a map containing the offset-data pairs of the page
+     */
+    public Map<Integer, Integer> getPageContents() {
+        // Create a copy to protect original page contents from modification
+        Map<Integer, Integer> pageCopy = new HashMap<>();
+        for (Map.Entry<Integer, Integer> e : pageContents.entrySet()) {
+            pageCopy.put(e.getKey(), e.getValue()); // make a copy of the page so the user cannot modify the page's actual data in memory
+        }
+        return pageCopy; // return a copy of the page contents
     }
 
     /**

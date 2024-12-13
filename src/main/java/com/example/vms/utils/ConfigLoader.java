@@ -35,22 +35,22 @@ public class ConfigLoader {
         return objectMapper.readValue(file, SimulationConfig.class);
     }
 
-    /**
-     * Retrieves a list of available configuration files in the configurations folder.
-     * This method searches for all files with the ".json" extension in the "src/main/resources/configurations" directory.
-     *
-     * @return a list of filenames (with ".json" extension) of configuration files available in the folder
-     */
-    @GetMapping("/getConfigFiles")
-    @ResponseBody
-    public List<String> getConfigFiles() {
-        // Define the folder containing the configuration files
-        File folder = new File("src/main/resources/configurations");
-
-        // Get the list of files in the folder that have a ".json" extension
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-
-        // If files exist, return the list of filenames, else return an empty list
-        return files != null ? Arrays.stream(files).map(File::getName).collect(Collectors.toList()) : new ArrayList<>();
-    }
+//    /**
+//     * Retrieves a list of available configuration files in the configurations folder.
+//     * This method searches for all files with the ".json" extension in the "src/main/resources/configurations" directory.
+//     *
+//     * @return a list of filenames (with ".json" extension) of configuration files available in the folder
+//     */
+//    @GetMapping("/getConfigFiles")
+//    @ResponseBody
+//    public List<String> getConfigFiles() {
+//        // Define the folder containing the configuration files
+//        File folder = new File("src/main/resources/configurations");
+//
+//        // Get the list of files in the folder that have a ".json" extension
+//        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+//
+//        // If files exist, return the list of filenames, else return an empty list
+//        return files != null ? Arrays.stream(files).map(File::getName).collect(Collectors.toList()) : new ArrayList<>();
+//    }
 }

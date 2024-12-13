@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller that manages the simulation of a virtual memory system, including page replacement algorithms,
@@ -36,6 +37,7 @@ public class MemoryController {
     private int virtualMemorySize;
     private int pageTableSize;
     private PageTable pageTable = null;
+    private List<Integer> futureAccesses = new ArrayList<>(); // List of future memory accesses
     public static List<String> logMessages = new ArrayList<>(); // List to store log messages
 
     /**
@@ -68,6 +70,7 @@ public class MemoryController {
                 break;
             case "Optimal":
                 algorithm = new OptimalReplacement();
+                ((OptimalReplacement) algorithm).setFutureAccesses(futureAccesses);
                 break;
             case "FIFO":
             default:
@@ -224,6 +227,12 @@ public class MemoryController {
         try {
             SimulationConfig selectedConfig = ConfigLoader.loadConfigFromFile("src/main/resources/configurations/" + configFile);
             if (selectedConfig != null) {
+                if(selectedConfig.getReplacementAlgorithm().equalsIgnoreCase("Optimal"))
+                {
+                    // Parse futureAccesses from the configuration
+                    List<Integer> configFutureAccesses = selectedConfig.getFutureAccesses();
+                    futureAccesses = configFutureAccesses;
+                }
                 // Initialize the memory manager with the selected configuration
                 initializeMemoryManager(
                         selectedConfig.getVirtualAddressWidth(),

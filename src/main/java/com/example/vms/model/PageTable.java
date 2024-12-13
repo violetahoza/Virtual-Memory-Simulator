@@ -79,41 +79,12 @@ public class PageTable {
         //LogResults.log("VPN " + vpn + " valid: " + valid); // Log validity check result
         return valid;
     }
-    public boolean isOnDisk(int vpn) {
-        PageTableEntry entry = pageTable.get(vpn);
-        if (entry != null) {
-            return entry.isDiskPage();
-        }
-        return false;
-    }
+
     public void setDiskPage(int vpn, boolean isOnDisk) {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null) {
             entry.setDiskPage(isOnDisk);
         }
-    }
-    /**
-     * Checks if the page entry for the given VPN has been referenced.
-     * @param vpn The virtual page number (VPN).
-     * @return True if the page entry has been referenced, false otherwise.
-     */
-    public boolean isReferenced(int vpn) {
-        PageTableEntry entry = pageTable.get(vpn);
-        boolean referenced = entry != null && entry.isReferenced();
-        //LogResults.log("VPN " + vpn + " referenced: " + referenced); // Log reference check result
-        return referenced;
-    }
-
-    /**
-     * Checks if the page entry for the given VPN is dirty (modified).
-     * @param vpn The virtual page number (VPN).
-     * @return True if the page entry is dirty, false otherwise.
-     */
-    public boolean isDirty(int vpn) {
-        PageTableEntry entry = pageTable.get(vpn);
-        boolean dirty = entry != null && entry.isDirty();
-        //LogResults.log("VPN " + vpn + " dirty: " + dirty); // Log dirty check result
-        return dirty;
     }
 
     /**
@@ -214,22 +185,6 @@ public class PageTable {
     }
 
     /**
-     * Removes the entry for a given VPN from the page table and resets all associated flags.
-     * @param vpn The virtual page number (VPN).
-     */
-    public void removeEntry(int vpn) {
-        PageTableEntry entry = pageTable.get(vpn);
-        if (entry != null) {
-            entry.setFrameNumber(-1);
-            entry.setRefBit(false);
-            entry.setDirtyBit(false);
-            entry.setValidBit(false);
-            pageTable.remove(vpn);
-            //LogResults.log("Removed entry for VPN " + vpn); // Log entry removal
-        }
-    }
-
-    /**
      * Returns a copy of the page table's contents, preserving the current state of each entry.
      * @return A map representing a copy of the page table.
      */
@@ -263,4 +218,52 @@ public class PageTable {
         logBuilder.append("----------------------");
         LogResults.log(logBuilder.toString()); // Log the page table contents
     }
+
+    public boolean isOnDisk(int vpn) {
+        PageTableEntry entry = pageTable.get(vpn);
+        if (entry != null) {
+            return entry.isDiskPage();
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the page entry for the given VPN has been referenced.
+     * @param vpn The virtual page number (VPN).
+     * @return True if the page entry has been referenced, false otherwise.
+     */
+    public boolean isReferenced(int vpn) {
+        PageTableEntry entry = pageTable.get(vpn);
+        boolean referenced = entry != null && entry.isReferenced();
+        //LogResults.log("VPN " + vpn + " referenced: " + referenced); // Log reference check result
+        return referenced;
+    }
+
+    /**
+     * Checks if the page entry for the given VPN is dirty (modified).
+     * @param vpn The virtual page number (VPN).
+     * @return True if the page entry is dirty, false otherwise.
+     */
+    public boolean isDirty(int vpn) {
+        PageTableEntry entry = pageTable.get(vpn);
+        boolean dirty = entry != null && entry.isDirty();
+        //LogResults.log("VPN " + vpn + " dirty: " + dirty); // Log dirty check result
+        return dirty;
+    }
+
+//     /**
+//     * Removes the entry for a given VPN from the page table and resets all associated flags.
+//     * @param vpn The virtual page number (VPN).
+//     */
+//    public void removeEntry(int vpn) {
+//        PageTableEntry entry = pageTable.get(vpn);
+//        if (entry != null) {
+//            entry.setFrameNumber(-1);
+//            entry.setRefBit(false);
+//            entry.setDirtyBit(false);
+//            entry.setValidBit(false);
+//            pageTable.remove(vpn);
+//            //LogResults.log("Removed entry for VPN " + vpn); // Log entry removal
+//        }
+//    }
 }

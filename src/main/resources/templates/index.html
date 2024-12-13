@@ -176,7 +176,6 @@
                                         <i class="fa fa-upload me-2"></i>Load Configuration
                                     </button>
                                 </form>
-
                                 <form action="/nextOperation" method="get" class="d-flex align-items-center">
                                     <button id="nextStepBtn" type="submit" class="btn btn-custom btn-sm" onclick="executeNextStep()">
                                         <i class="fa fa-play me-2"></i>Execute Next Operation
@@ -206,23 +205,6 @@
                 </div>
             </div>
         </div>
-
-<!--        <div class="col-md-4">-->
-<!--            <div class="card">-->
-<!--                <div class="card-header">-->
-<!--                    <h4>Load Configuration</h4>-->
-<!--                </div>-->
-<!--                <div class="card-body">-->
-<!--                    <form action="/loadConfig" method="post">-->
-<!--                        <div class="form-group">-->
-<!--                            <label for="filePath">Configuration File Path:</label>-->
-<!--                            <input type="text" class="form-control" id="filePath" name="filePath" placeholder="Enter path to config file" required>-->
-<!--                        </div>-->
-<!--                        <button type="submit" class="btn btn-custom">Load Configuration</button>-->
-<!--                    </form>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
 
         <div class="col-md-4">
             <div class="card">
@@ -354,11 +336,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-<<<<<<< HEAD
                     <h4>Secondary Storage</h4>
-=======
-                    <h4>Secondary Storage (Disk)</h4>
->>>>>>> 2accb40833c98bb1d85e40825a5d105365b7c8a0
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered" id="diskTable">
@@ -583,18 +561,17 @@
                         document.getElementById("secondaryMemorySize").value = config.secondaryMemorySize || '';
                         document.getElementById("replacementAlgorithm").value = config.replacementAlgorithm || '';
 
+                        console.log("Configuration loaded successfully. Locking fields.");
                         toggleFields(false); // Lock fields
                     }
                 })
                 .catch(error => console.error('Error fetching configuration:', error));
         } else {
             // Clear fields and unlock for manual editing
-            clearFields();
-            toggleFields(true);
+            clearAndUnlockFields();
         }
     }
-    // Clear all input fields
-    function clearFields() {
+    function clearAndUnlockFields() {
         const fields = [
             "virtualAddressWidth",
             "pageSize",
@@ -604,10 +581,14 @@
             "replacementAlgorithm"
         ];
         fields.forEach(field => {
-            document.getElementById(field).value = '';
+            const inputField = document.getElementById(field);
+            if (inputField) {
+                inputField.value = '';      // Clear the field value
+                inputField.disabled = false; // Unlock the field
+            }
         });
     }
-    // Function to toggle whether fields are editable or not
+
     function toggleFields(enable) {
         const fields = [
             "virtualAddressWidth",
@@ -618,7 +599,10 @@
             "replacementAlgorithm"
         ];
         fields.forEach(field => {
-            document.getElementById(field).disabled = !enable;
+            const inputField = document.getElementById(field);
+            if (inputField) {
+                inputField.disabled = !enable; // Lock or unlock the field
+            }
         });
     }
 

@@ -17,6 +17,15 @@
     { "type": "Store", "vpn": 2, "offset": 15, "data": 150 },
     { "type": "Allocate", "vpn": 4 },
     { "type": "Store", "vpn": 3, "offset": 20, "data": 200 },
-    { "type": "Load", "address": 128 }
+    { "type": "Load", "address": 128 },
+    { "type": "Allocate", "vpn": 5 },
+    { "type": "Load", "address": 160 },
+    { "type": "Allocate", "vpn": 6 },
+    { "type": "Store", "vpn": 4, "offset": 25, "data": 250 },
+    { "type": "Load", "address": 192 },
+    { "type": "Allocate", "vpn": 7 },
+    { "type": "Load", "address": 224 },
+    { "type": "Store", "vpn": 5, "offset": 5, "data": 300 },
+    { "type": "Load", "address": 256 }
   ]
 }
