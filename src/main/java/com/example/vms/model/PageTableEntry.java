@@ -150,10 +150,21 @@ public class PageTableEntry {
         return (isReferenced() ? 2 : 0) + (isDirty() ? 1 : 0);
     }
 
-    // Getter for next access
-    public int getNextAccess() { return nextAccess; }
-    // Setter for next access
-    public void setNextAccess(int nextAccess) { this.nextAccess = nextAccess; }
+    /**
+     * Gets the next access of the page (for optimal replacement).
+     * @return The next access time of a page.
+     */
+    public int getNextAccess() {
+        return nextAccess;
+    }
+
+    /**
+     * Sets the next access time for the page.
+     * @param nextAccess The new access time to set.
+     */
+    public void setNextAccess(int nextAccess) {
+        this.nextAccess = nextAccess;
+    }
 
     /**
      * Returns a string representation of the page table entry.

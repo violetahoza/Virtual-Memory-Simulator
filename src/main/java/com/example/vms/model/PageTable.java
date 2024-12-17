@@ -24,9 +24,9 @@ public class PageTable {
         pageTable = new HashMap<>();
         for (int i = 0; i < size; i++) {
             PageTableEntry entry = new PageTableEntry();
-            pageTable.put(i, entry); // Initialize entries with default values
+            pageTable.put(i, entry); // initialize entries with default values
         }
-        LogResults.log("Page table initialized with size: " + size); // Log the initialization
+        LogResults.log("Page table initialized with size: " + size);
     }
 
     /**
@@ -37,10 +37,10 @@ public class PageTable {
     public PageTableEntry getEntry(int vpn) {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null && entry.isValid()) {
-            //LogResults.log("Page table hit for VPN " + vpn + ": " + entry); // Log a page hit
+            //LogResults.log("Page table hit for VPN " + vpn + ": " + entry);
             return entry;
         }
-        //LogResults.log("Page table miss for VPN " + vpn); // Log a page miss
+        //LogResults.log("Page table miss for VPN " + vpn);
         return null;
     }
 
@@ -49,7 +49,7 @@ public class PageTable {
      * @return A list of all page table entries.
      */
     public List<PageTableEntry> getEntries() {
-        //LogResults.log("Retrieving all entries from the page table."); // Log retrieval of all entries
+        //LogResults.log("Retrieving all entries from the page table.");
         return new ArrayList<>(pageTable.values());
     }
 
@@ -61,10 +61,10 @@ public class PageTable {
     public Integer getPhysicalPageNumber(int vpn) {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null) {
-            //LogResults.log("Physical page number for VPN " + vpn + ": " + entry.getFrameNumber()); // Log the PPN
+            //LogResults.log("Physical page number for VPN " + vpn + ": " + entry.getFrameNumber());
             return entry.getFrameNumber();
         }
-        //LogResults.log("No physical page found for VPN " + vpn); // Log if no PPN is found
+        //LogResults.log("No physical page found for VPN " + vpn);
         return -1;
     }
 
@@ -76,7 +76,7 @@ public class PageTable {
     public boolean isValid(int vpn) {
         PageTableEntry entry = pageTable.get(vpn);
         boolean valid = entry != null && entry.isValid();
-        //LogResults.log("VPN " + vpn + " valid: " + valid); // Log validity check result
+        //LogResults.log("VPN " + vpn + " valid: " + valid);
         return valid;
     }
 
@@ -96,7 +96,7 @@ public class PageTable {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null) {
             entry.setDirtyBit(dirty);
-            //LogResults.log("Set dirty bit for VPN " + vpn + ": " + dirty); // Log dirty bit setting
+            //LogResults.log("Set dirty bit for VPN " + vpn + ": " + dirty);
         }
     }
 
@@ -109,7 +109,7 @@ public class PageTable {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null) {
             entry.setRefBit(referenced);
-            //LogResults.log("Set reference bit for VPN " + vpn + ": " + referenced); // Log reference bit setting
+            //LogResults.log("Set reference bit for VPN " + vpn + ": " + referenced);
         }
     }
 
@@ -122,12 +122,12 @@ public class PageTable {
         PageTableEntry entry = pageTable.get(vpn);
         if (entry != null) {
             entry.setValidBit(valid);
-            //LogResults.log("Set valid bit for VPN " + vpn + ": " + valid); // Log valid bit setting
+            //LogResults.log("Set valid bit for VPN " + vpn + ": " + valid);
             if (!valid) {
                 entry.setFrameNumber(-1);
                 entry.setRefBit(false);
                 entry.setDirtyBit(false);
-                //LogResults.log("Invalidated VPN " + vpn + " and reset associated bits."); // Log invalidation and reset
+                //LogResults.log("Invalidated VPN " + vpn + " and reset associated bits.");
             }
         }
     }
@@ -140,11 +140,11 @@ public class PageTable {
     public int getCorrespondingVPN(int ppn) {
         for (Map.Entry<Integer, PageTableEntry> entry : pageTable.entrySet()) {
             if (entry.getValue().getFrameNumber() == ppn) {
-                //LogResults.log("Found corresponding VPN for PPN " + ppn + ": " + entry.getKey()); // Log found VPN
+                //LogResults.log("Found corresponding VPN for PPN " + ppn + ": " + entry.getKey());
                 return entry.getKey();
             }
         }
-        //LogResults.log("No corresponding VPN found for PPN " + ppn); // Log if no corresponding VPN is found
+        //LogResults.log("No corresponding VPN found for PPN " + ppn);
         return -1;
     }
 
@@ -161,7 +161,7 @@ public class PageTable {
         entry.setDirtyBit(false);
         entry.setDiskPage(false);
         pageTable.put(vpn, entry);
-        //LogResults.log("Added entry for VPN " + vpn + " with PPN " + ppn); // Log entry addition
+        //LogResults.log("Added entry for VPN " + vpn + " with PPN " + ppn);
     }
 
     public void addEntryOnDisk(int vpn, PageTableEntry entry) {
@@ -176,11 +176,11 @@ public class PageTable {
     public boolean contains(int ppn) {
         for (PageTableEntry entry : pageTable.values()) {
             if (entry.getFrameNumber() == ppn) {
-                //LogResults.log("Page table contains PPN " + ppn); // Log presence of PPN
+                //LogResults.log("Page table contains PPN " + ppn);
                 return true;
             }
         }
-        //LogResults.log("Page table does not contain PPN " + ppn); // Log absence of PPN
+        //LogResults.log("Page table does not contain PPN " + ppn);
         return false;
     }
 
@@ -202,13 +202,10 @@ public class PageTable {
         for (Map.Entry<Integer, PageTableEntry> entry : pageTable.entrySet()) {
             int vpn = entry.getKey(); // Virtual Page Number
             PageTableEntry pageEntry = entry.getValue();
-            // Calculate the next access using the Optimal Replacement algorithm
-            int nextAccess = optimalReplacement.getNextUse(vpn);
-            // Update the next access for the page table entry
-            pageEntry.setNextAccess(nextAccess);
+            int nextAccess = optimalReplacement.getNextUse(vpn); // calculate the next access using the Optimal Replacement algorithm
+            pageEntry.setNextAccess(nextAccess); // update the next access for the page table entry
         }
     }
-
 
     /**
      * Returns a copy of the page table's contents, preserving the current state of each entry.
@@ -228,14 +225,10 @@ public class PageTable {
             );
             pageTableCopy.put(e.getKey(), newEntry);
         }
-        //LogResults.log("Page table copied."); // Log copying action
+        //LogResults.log("Page table copied.");
         return pageTableCopy;
     }
 
-    public void setPPN(int vpn, int ppn) {
-        PageTableEntry entry = pageTable.get(vpn);
-        entry.setFrameNumber(ppn);
-    }
     /**
      * Prints the current contents of the page table to the log.
      */
@@ -245,15 +238,12 @@ public class PageTable {
             logBuilder.append(e.getKey()).append(": ").append(e.getValue()).append("\n");
         }
         logBuilder.append("----------------------");
-        LogResults.log(logBuilder.toString()); // Log the page table contents
+        LogResults.log(logBuilder.toString());
     }
 
-    public boolean isOnDisk(int vpn) {
+    public void setPPN(int vpn, int ppn) {
         PageTableEntry entry = pageTable.get(vpn);
-        if (entry != null) {
-            return entry.isDiskPage();
-        }
-        return false;
+        entry.setFrameNumber(ppn);
     }
 
     /**
@@ -264,7 +254,7 @@ public class PageTable {
     public boolean isReferenced(int vpn) {
         PageTableEntry entry = pageTable.get(vpn);
         boolean referenced = entry != null && entry.isReferenced();
-        //LogResults.log("VPN " + vpn + " referenced: " + referenced); // Log reference check result
+        //LogResults.log("VPN " + vpn + " referenced: " + referenced);
         return referenced;
     }
 
@@ -276,9 +266,17 @@ public class PageTable {
     public boolean isDirty(int vpn) {
         PageTableEntry entry = pageTable.get(vpn);
         boolean dirty = entry != null && entry.isDirty();
-        //LogResults.log("VPN " + vpn + " dirty: " + dirty); // Log dirty check result
+        //LogResults.log("VPN " + vpn + " dirty: " + dirty);
         return dirty;
     }
+
+//    public boolean isOnDisk(int vpn) {
+//        PageTableEntry entry = pageTable.get(vpn);
+//        if (entry != null) {
+//            return entry.isDiskPage();
+//        }
+//        return false;
+//    }
 
 //     /**
 //     * Removes the entry for a given VPN from the page table and resets all associated flags.
@@ -292,7 +290,7 @@ public class PageTable {
 //            entry.setDirtyBit(false);
 //            entry.setValidBit(false);
 //            pageTable.remove(vpn);
-//            //LogResults.log("Removed entry for VPN " + vpn); // Log entry removal
+//            //LogResults.log("Removed entry for VPN " + vpn);
 //        }
 //    }
 }

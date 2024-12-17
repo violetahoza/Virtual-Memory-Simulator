@@ -37,9 +37,7 @@ public class Operation {
     public void setOffset(int offset) {
         this.offset = offset;
     }
-    public int getData() {
-        return data;
-    }
+    public int getData() { return data; }
     public void setData(int data) {
         this.data = data;
     }
