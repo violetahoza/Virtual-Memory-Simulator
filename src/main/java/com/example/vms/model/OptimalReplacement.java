@@ -78,14 +78,14 @@ public class OptimalReplacement implements ReplacementAlgorithm {
      * @param vpn The virtual page number to check for future access.
      * @return The next step the page will be accessed, or Integer.MAX_VALUE if it won't be accessed.
      */
-    private int getNextUse(int vpn) {
+    public int getNextUse(int vpn) {
         // Find the first occurrence of this VPN after the current step
         for (int i = currentStep; i < futureAccesses.size(); i++) {
             if (futureAccesses.get(i) == vpn) {
                 return i;
             }
         }
-        LogResults.log("VPN " + vpn + " will not be accessed again.");
+        // LogResults.log("VPN " + vpn + " will not be accessed again.");
         return Integer.MAX_VALUE; // Page won't be accessed again
     }
 
@@ -110,9 +110,8 @@ public class OptimalReplacement implements ReplacementAlgorithm {
         if (!activePages.containsKey(vpn)) {
             LogResults.log("VPN " + vpn + " not found in active pages. Adding it.");
         }
-        activePages.put(vpn, currentStep);  // Update the access time for the page
+        activePages.put(vpn, ++currentStep);  // Update the access time for the page
         LogResults.log("Updated access time for VPN " + vpn + " to step " + currentStep);
-        currentStep++;
     }
 
     /**

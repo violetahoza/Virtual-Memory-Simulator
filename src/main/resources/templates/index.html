@@ -101,7 +101,8 @@
             max-height: 490px;
         }
         .highlight {
-            background-color: #A88CA4;
+            background-color: #a60543;
+            color: white;
             font-weight: bold;
         }
     </style>
@@ -139,11 +140,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="replacementAlgorithm">Replacement Algorithm:</label>
-                                <select class="form-control" id="replacementAlgorithm" name="replacementAlgorithm" th:value="${replacementAlgorithm}" required>
-                                    <option value="FIFO">FIFO (First In, First Out)</option>
-                                    <option value="LRU">LRU (Least Recently Used)</option>
-                                    <option value="NRU">NRU (Not Recently Used)</option>
-                                    <option value="Optimal">Optimal</option>
+                                <select class="form-control" id="replacementAlgorithm" name="replacementAlgorithm" required>
+                                    <option value="FIFO" th:selected="${replacementAlgorithm == 'FIFO'}">FIFO (First In, First Out)</option>
+                                    <option value="LRU" th:selected="${replacementAlgorithm == 'LRU'}">LRU (Least Recently Used)</option>
+                                    <option value="NRU" th:selected="${replacementAlgorithm == 'NRU'}">NRU (Not Recently Used)</option>
+                                    <option value="Optimal" th:selected="${replacementAlgorithm == 'Optimal'}">Optimal</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -240,7 +241,7 @@
                         <button type="submit" class="btn btn-custom"><i class="fa fa-file icon"></i> Allocate</button>
                     </form>
                     <hr>
-                    <form action="/load" method="post">
+                    <form action="/load" method="post" onsubmit="loadVPN(); return false;">
                         <div class="form-group">
                             <label for="loadAddress">Read from Virtual Address:</label>
                             <input type="number" class="form-control" id="loadAddress" name="loadAddress" min="0" placeholder="Enter page number" th:value="${loadAddress}" required>
@@ -248,7 +249,7 @@
                         <button type="submit" class="btn btn-custom"><i class="fa fa-download icon"></i> Load</button>
                     </form>
                     <hr>
-                    <form action="/store" method="post">
+                    <form action="/store" method="post" onsubmit="storeVPN(); return false;">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="storeVPN">Write to Virtual Page:</label>
@@ -283,15 +284,21 @@
                             <th>Dirty</th>
                             <th>Ref</th>
                             <th>PPN</th>
+                            <th>Access Time</th>
+                            <th>Class</th>
+                            <th>Next Access</th>
                         </tr>
                         </thead>
                         <tbody id="pageTableBody">
-                        <tr th:each="entry : ${pageTableEntries}">
+                        <tr th:each="entry : ${pageTableEntries}" data-vpn="${entry.key}">
                             <td th:text="${entry.key}"></td>
                             <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.isReferenced() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.getFrameNumber()}"></td>
+                            <td th:text="${entry.value.getAccessTime()}"></td>
+                            <td th:text="${entry.value.getNRUClass()}"></td>
+                            <td th:text="${entry.value.getNextAccess()}"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -348,7 +355,7 @@
                         </tr>
                         </thead>
                         <tbody id="diskEntries">
-                        <tr th:each="entry : ${diskEntries}">
+                        <tr th:each="entry : ${diskEntries}" data-vpn="${entry.key}">
                             <td th:text="${entry.key}"></td>
                             <td>
                                 <div th:each="dataEntry : ${entry.value.getContentsWithOffsets()}">
@@ -384,7 +391,7 @@
                         </tr>
                         </thead>
                         <tbody id="tlbBody">
-                        <tr th:each="entry : ${tlbEntries}">
+                        <tr th:each="entry : ${tlbEntries}" data-vpn="${entry.key}">
                             <td th:text="${entry.key}"></td>
                             <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
@@ -590,19 +597,26 @@
     }
 
     function toggleFields(enable) {
-        const fields = [
-            "virtualAddressWidth",
-            "pageSize",
-            "tlbSize",
-            "physicalMemorySize",
-            "secondaryMemorySize",
-            "replacementAlgorithm"
-        ];
-        fields.forEach(field => {
-            const inputField = document.getElementById(field);
-            if (inputField) {
-                inputField.disabled = !enable; // Lock or unlock the field
-            }
+        // Ensure the function runs after the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const fields = [
+                "virtualAddressWidth",
+                "pageSize",
+                "tlbSize",
+                "physicalMemorySize",
+                "secondaryMemorySize",
+                "replacementAlgorithm"
+            ];
+
+            fields.forEach(field => {
+                const inputField = document.getElementById(field);
+                if (inputField) {
+                    inputField.disabled = !enable;
+                    console.log(`Field ${field} disabled: ${!enable}`);
+                } else {
+                    console.log(`Field ${field} not found`);
+                }
+            });
         });
     }
 
@@ -627,6 +641,39 @@
                 console.error('Error during next operation execution:', error);
                 document.getElementById('nextStepBtn').disabled = false;  // Enable button
             });
+    }
+
+    function highlightRow(vpn) {
+        // Ensure the function runs after the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Attempting to highlight row for VPN: " + vpn);
+            // Remove highlight from all rows first
+            const allRows = document.querySelectorAll('tr[data-vpn]');
+            allRows.forEach(row => row.classList.remove('highlight'));
+            // Find the specific row, being more flexible with comparison
+            const row = Array.from(allRows).find(r =>
+                r.getAttribute('data-vpn') == vpn.toString()
+            );
+            if (row) {
+                row.classList.add('highlight');
+                console.log("Row highlighted successfully");
+            } else {
+                console.log("No row found for VPN: " + vpn);
+            }
+        });
+    }
+
+    function loadVPN() {
+        console.log("loadVPN function called"); // Debugging log
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const loadAddress = parseInt(document.getElementById('loadAddress').value) || 0;
+        const vpn = Math.floor(loadAddress / pageSize);
+        highlightRow(vpn);  // Highlight the row in the page table
+    }
+    function storeVPN() {
+        console.log("storeVPN function called"); // Debugging log
+        const vpn = parseInt(document.getElementById('storeVPN').value) || 0;  // Get the VPN from the form
+        highlightRow(vpn);  // Highlight the row in the page table
     }
 </script>
 </body>

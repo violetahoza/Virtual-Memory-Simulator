@@ -14,13 +14,16 @@ import java.util.Set;
 public class LRUReplacement implements ReplacementAlgorithm {
     private final Map<Integer, Long> pageAccessTime;  // tracks the access time for each page
     private long accessCounter; // incremental counter to simulate access timestamps
+    private PageTable pageTable; // reference to the page table
 
     /**
-     * Constructs an instance of the LRUReplacement algorithm.
-     * Initializes the page access tracking structure and access counter.
+     * Constructs the LRUReplacement algorithm with a reference to the page table.
+     * This allows the algorithm to synchronize access times with the page table entries.
+     * @param pageTable The page table used by the memory manager.
      */
-    public LRUReplacement() {
+    public LRUReplacement(PageTable pageTable) {
         this.pageAccessTime = new LinkedHashMap<>();
+        this.pageTable = pageTable;
         this.accessCounter = 0;
         LogResults.log("LRU replacement algorithm initialized");
     }
@@ -61,7 +64,11 @@ public class LRUReplacement implements ReplacementAlgorithm {
     @Override
     public void updatePageAccess(int vpn) {
         // Update the access time of the page to the current access counter
-        pageAccessTime.put(vpn, ++accessCounter);
+        long currentAccessTime = ++accessCounter;
+        pageAccessTime.put(vpn, currentAccessTime);
+        if (pageTable != null) {
+            pageTable.updateAccessTime(vpn, currentAccessTime);
+        }
         LogResults.log("Updated access for VPN " + vpn + " with access time " + accessCounter);
     }
 

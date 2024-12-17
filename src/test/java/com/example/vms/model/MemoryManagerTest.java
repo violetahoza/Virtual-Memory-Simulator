@@ -104,7 +104,8 @@ class MemoryManagerTest {
         int pageSize = 16; // 16 bytes per page
         int physicalMemorySize = 64; // 64 bytes of physical memory (4 pages)
         int diskSize = 256; // 256 bytes of disk space
-        ReplacementAlgorithm replacementAlgorithm = new LRUReplacement();
+        PageTable pageTable = new PageTable(virtualAddressWidth / pageSize);
+        ReplacementAlgorithm replacementAlgorithm = new LRUReplacement(pageTable);
 
         MemoryManager lruMemoryManager = new MemoryManager(virtualAddressWidth, tlbSize, pageSize, physicalMemorySize, diskSize, replacementAlgorithm);
 
@@ -184,13 +185,13 @@ class MemoryManagerTest {
 
         // Allocate and load pages
         optimalMemoryManager.allocatePage(0);
-        optimalMemoryManager.load(0 * pageSize); // VPN 0
+        optimalMemoryManager.load(12); // VPN 0
         optimalMemoryManager.allocatePage(1);
-        optimalMemoryManager.load(1 * pageSize); // VPN 1
+        optimalMemoryManager.load(16); // VPN 1
         optimalMemoryManager.allocatePage(2);
-        optimalMemoryManager.load(2 * pageSize); // VPN 2
+        optimalMemoryManager.load(32); // VPN 2
         optimalMemoryManager.allocatePage(3);
-        optimalMemoryManager.load(3 * pageSize); // VPN 3
+        optimalMemoryManager.load(48); // VPN 3
 
         // At this point, physical memory is full
 

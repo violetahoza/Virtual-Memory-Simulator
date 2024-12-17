@@ -44,7 +44,8 @@ public class TLB {
                     entries.remove(lruVpn); // Remove the entry from the TLB
                     LogResults.log("Evicted VPN " + lruVpn + " from TLB based on TLB-specific LRU algorithm");
                 } else {
-                    LogResults.log("No valid entry found for eviction in TLB.");
+                    LogResults.log("No valid entry found for eviction in TLB. Evicting the oldest TLB entry.");
+                    entries.remove(getFirstEntryVPN());
                 }
             }
             else if (evictionAlgorithm instanceof NRUReplacement) {
@@ -54,8 +55,8 @@ public class TLB {
                     entries.remove(nruVpn); // Remove the entry from the TLB
                     LogResults.log("Evicted VPN " + nruVpn + " from TLB based on NRU algorithm.");
                 } else {
-                    LogResults.log("No valid entry found for eviction in TLB.");
-                }
+                    LogResults.log("No valid entry found for eviction in TLB. Evicting the oldest TLB entry.");
+                    entries.remove(getFirstEntryVPN());                }
             }
             else if (evictionAlgorithm instanceof FIFOReplacement) {
                 // For FIFO, evict the first entry directly without using the eviction algorithm
@@ -73,12 +74,12 @@ public class TLB {
                     entries.remove(optimalVpn); // Remove the entry from the TLB
                     // LogResults.log("Evicted VPN " + optimalVpn + " from TLB based on Optimal Replacement.");
                 } else {
-                    LogResults.log("No valid entry found for eviction in TLB using Optimal Replacement.");
-                }
+                    LogResults.log("No valid entry found for eviction in TLB. Evicting the oldest TLB entry.");
+                    entries.remove(getFirstEntryVPN());                }
             }
         }
         // Add the new entry
-        entries.put(vpn, new PageTableEntry(entry.getFrameNumber(), entry.isValid(), entry.isDirty(), entry.isReferenced(), entry.isDiskPage()));
+        entries.put(vpn, new PageTableEntry(entry.getFrameNumber(), entry.isValid(), entry.isDirty(), entry.isReferenced(), entry.isDiskPage(), entry.getAccessTime(), entry.getNextAccess()));
         // evictionAlgorithm.updatePageAccess(vpn); // Add the page to the eviction algorithm
         LogResults.log("Added VPN " + vpn + " to TLB");
     }
@@ -104,7 +105,7 @@ public class TLB {
     public int lookup(int vpn) {
         PageTableEntry entry = entries.get(vpn);
         if (entry != null && entry.isValid()) {
-            evictionAlgorithm.updatePageAccess(vpn); // Update LRU for the accessed VPN
+            //evictionAlgorithm.updatePageAccess(vpn); // Update LRU for the accessed VPN
             entry.setRefBit(true); // Set the reference bit
             //LogResults.log("TLB hit for VPN " + vpn + ": Frame " + entry.getFrameNumber());
             return entry.getFrameNumber(); // TLB hit
@@ -150,7 +151,7 @@ public class TLB {
     public Map<Integer, PageTableEntry> getTLBContents() {
         Map<Integer, PageTableEntry> tlbCopy = new LinkedHashMap<>();
         for (Map.Entry<Integer, PageTableEntry> e : entries.entrySet()) {
-            PageTableEntry newEntry = new PageTableEntry(e.getValue().getFrameNumber(), e.getValue().isValid(), e.getValue().isDirty(), e.getValue().isReferenced(), e.getValue().isDiskPage());
+            PageTableEntry newEntry = new PageTableEntry(e.getValue().getFrameNumber(), e.getValue().isValid(), e.getValue().isDirty(), e.getValue().isReferenced(), e.getValue().isDiskPage(), e.getValue().getAccessTime(), e.getValue().getNextAccess());
             tlbCopy.put(e.getKey(), newEntry);
         }
         //LogResults.log("Copied TLB contents");
@@ -185,7 +186,7 @@ public class TLB {
      */
     public boolean containsEntry(int vpn) {
         boolean contains = entries.containsKey(vpn);
-        LogResults.log("TLB contains VPN " + vpn + ": " + contains);
+        // LogResults.log("TLB contains VPN " + vpn + ": " + contains);
         return contains;
     }
 //    /**

@@ -157,7 +157,7 @@ public class PageTable {
         PageTableEntry entry = pageTable.getOrDefault(vpn, new PageTableEntry());
         entry.setFrameNumber(ppn);
         entry.setValidBit(true);
-        entry.setRefBit(true);
+        entry.setRefBit(false);
         entry.setDirtyBit(false);
         entry.setDiskPage(false);
         pageTable.put(vpn, entry);
@@ -185,6 +185,32 @@ public class PageTable {
     }
 
     /**
+     * Updates the access time of the page table entry for a given virtual page number (VPN).
+     * This is used to track when the page was last accessed.
+     * @param vpn The virtual page number of the entry to update.
+     * @param accessTime The new access time for the entry.
+     */
+    public void updateAccessTime(int vpn, long accessTime) {
+        PageTableEntry entry = pageTable.get(vpn);
+        if (entry != null) {
+            entry.setAccessTime(accessTime);
+            LogResults.log("Updated access time for VPN " + vpn + " to " + accessTime);
+        }
+    }
+
+    public void updateFutureAccesses(OptimalReplacement optimalReplacement) {
+        for (Map.Entry<Integer, PageTableEntry> entry : pageTable.entrySet()) {
+            int vpn = entry.getKey(); // Virtual Page Number
+            PageTableEntry pageEntry = entry.getValue();
+            // Calculate the next access using the Optimal Replacement algorithm
+            int nextAccess = optimalReplacement.getNextUse(vpn);
+            // Update the next access for the page table entry
+            pageEntry.setNextAccess(nextAccess);
+        }
+    }
+
+
+    /**
      * Returns a copy of the page table's contents, preserving the current state of each entry.
      * @return A map representing a copy of the page table.
      */
@@ -196,13 +222,16 @@ public class PageTable {
                     e.getValue().isValid(),
                     e.getValue().isDirty(),
                     e.getValue().isReferenced(),
-                    e.getValue().isDiskPage()
+                    e.getValue().isDiskPage(),
+                    e.getValue().getAccessTime(),
+                    e.getValue().getNextAccess()
             );
             pageTableCopy.put(e.getKey(), newEntry);
         }
         //LogResults.log("Page table copied."); // Log copying action
         return pageTableCopy;
     }
+
     public void setPPN(int vpn, int ppn) {
         PageTableEntry entry = pageTable.get(vpn);
         entry.setFrameNumber(ppn);

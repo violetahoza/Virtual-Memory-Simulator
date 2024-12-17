@@ -11,6 +11,8 @@ public class PageTableEntry {
     private boolean dirtyBit; // Reflects the page's state (if the page from the disk was modified)
     private boolean refBit; // Set whenever a page is referenced, either for reading or for writing
     private boolean diskPage; // Indicates if the page is stored on disk
+    private long accessTime; // Tracks the last access time for LRU
+    private int nextAccess = Integer.MAX_VALUE; // Default to MAX_VALUE (not accessed again)
 
     /**
      * Default constructor that initializes an invalid page entry.
@@ -22,6 +24,8 @@ public class PageTableEntry {
         this.dirtyBit = false;
         this.refBit = false;
         this.diskPage = false;
+        this.accessTime = -1;
+        this.nextAccess = Integer.MAX_VALUE;
     }
 
     /**
@@ -32,12 +36,14 @@ public class PageTableEntry {
      * @param refBit      true if the page has been recently referenced, otherwise false
      * @param diskPage    true if the page is stored on disk, otherwise false
      */
-    public PageTableEntry(int frameNumber, boolean validBit, boolean dirtyBit, boolean refBit, boolean diskPage) {
+    public PageTableEntry(int frameNumber, boolean validBit, boolean dirtyBit, boolean refBit, boolean diskPage, long accessTime, int nextAccess) {
         this.frameNumber = frameNumber;
         this.refBit = refBit;
         this.validBit = validBit;
         this.dirtyBit = dirtyBit;
         this.diskPage = diskPage;
+        this.accessTime = accessTime;
+        this.nextAccess = nextAccess;
     }
 
     /**
@@ -113,6 +119,41 @@ public class PageTableEntry {
     public void setValidBit(boolean validBit) {
         this.validBit = validBit;
     }
+
+    /**
+     * Gets the last access time of the page.
+     * @return The last access time as a long value.
+     */
+    public long getAccessTime() {
+        return accessTime;
+    }
+
+    /**
+     * Sets the last access time for the page.
+     * @param accessTime The new access time to set.
+     */
+    public void setAccessTime(long accessTime) {
+        this.accessTime = accessTime;
+    }
+
+    /**
+     * Returns the NRU class of the page based on its referenced and dirty bits.
+     * The NRU class is calculated as follows:
+     * Class 0: Not Referenced, Not Dirty
+     * Class 1: Not Referenced, Dirty
+     * Class 2: Referenced, Not Dirty
+     * Class 3: Referenced, Dirty
+     *
+     * @return The NRU class (0-3).
+     */
+    public int getNRUClass() {
+        return (isReferenced() ? 2 : 0) + (isDirty() ? 1 : 0);
+    }
+
+    // Getter for next access
+    public int getNextAccess() { return nextAccess; }
+    // Setter for next access
+    public void setNextAccess(int nextAccess) { this.nextAccess = nextAccess; }
 
     /**
      * Returns a string representation of the page table entry.

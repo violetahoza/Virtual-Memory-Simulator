@@ -63,7 +63,7 @@ public class MemoryController {
         ReplacementAlgorithm algorithm;
         switch (replacementAlgorithm) {
             case "LRU":
-                algorithm = new LRUReplacement();
+                algorithm = new LRUReplacement(pageTable);
                 break;
             case "NRU":
                 algorithm = new NRUReplacement(pageTable);
@@ -133,6 +133,11 @@ public class MemoryController {
         model.addAttribute("replacementAlgorithm", replacementAlgorithm);
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);
+
+        if (replacementAlgorithm.equalsIgnoreCase("Optimal")) {
+            OptimalReplacement optimalReplacement = (OptimalReplacement) memoryManager.getReplacementAlgorithm();
+            memoryManager.getPageTable().updateFutureAccesses(optimalReplacement); // Update future accesses for the page table
+        }
 
         // Memory data
         model.addAttribute("tlbEntries", memoryManager.getTlb().getEntries());
@@ -287,16 +292,16 @@ public class MemoryController {
         switch (operation.getType()) {
             case "Allocate":
                 memoryManager.allocatePage(operation.getVpn());
-                logMessages.add("Allocated page: " + operation.getVpn());
+                // logMessages.add("Allocated page: " + operation.getVpn());
                 break;
             case "Load":
                 memoryManager.load(operation.getAddress());
-                logMessages.add("Loaded address: " + operation.getAddress());
+                // logMessages.add("Loaded address: " + operation.getAddress());
                 break;
             case "Store":
                 int address = operation.getVpn() * pageSize + operation.getOffset();
                 memoryManager.store(address, operation.getData());
-                logMessages.add("Stored data " + operation.getData() + " at address: " + address);
+                // logMessages.add("Stored data " + operation.getData() + " at address: " + address);
                 break;
             default:
                 logMessages.add("Unknown operation type: " + operation.getType());
@@ -321,7 +326,7 @@ public class MemoryController {
         memoryManager.load(address);
         // Add the address to the model to display
         model.addAttribute("loadAddress", address);
-        //LogResults.log("Loaded address: " + address);
+        // LogResults.log("Loaded address: " + address);
         return "redirect:/";
     }
 
@@ -344,7 +349,7 @@ public class MemoryController {
         model.addAttribute("storeVPN", vpn);
         model.addAttribute("storeOffset", offset);
         model.addAttribute("storeData", data);
-        //LogResults.log("Stored data " + data + " at address: " + address);
+        // LogResults.log("Stored data " + data + " at address: " + address);
         return "redirect:/";
     }
 

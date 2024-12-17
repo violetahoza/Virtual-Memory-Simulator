@@ -17,7 +17,7 @@ public class MemoryManager {
     private ReplacementAlgorithm replacementAlgorithm;
     private int pageSize, virtualAddressWidth, virtualMemorySize;
     private int operationCount; // Counter for memory operations
-    private static final int RESET_INTERVAL = 5; // Reset every 5 operations
+    private static final int RESET_INTERVAL = 8; // Reset every 8 operations
 
     /**
      * Constructs the MemoryManager with the provided memory configurations.
@@ -38,13 +38,15 @@ public class MemoryManager {
         this.virtualAddressWidth = virtualAddressWidth;
         this.virtualMemorySize = (int) Math.pow(2, virtualAddressWidth);
         this.pageTable = new PageTable(virtualMemorySize / pageSize);
+        if(replacementAlgorithm instanceof LRUReplacement)
+            replacementAlgorithm = new LRUReplacement(pageTable);
         if(replacementAlgorithm instanceof NRUReplacement)
             replacementAlgorithm = new NRUReplacement(pageTable);
-        if(replacementAlgorithm instanceof OptimalReplacement)
-        {
-            List<Integer> futureAccesses = Arrays.asList(1, 4, 0, 1, 2, 3, 5, 6);
-            ((OptimalReplacement) replacementAlgorithm).setFutureAccesses(futureAccesses);
-        }
+//        if(replacementAlgorithm instanceof OptimalReplacement)
+//        {
+//            List<Integer> futureAccesses = Arrays.asList(1, 4, 0, 1, 2, 3, 5, 6);
+//            ((OptimalReplacement) replacementAlgorithm).setFutureAccesses(futureAccesses);
+//        }
         this.replacementAlgorithm = replacementAlgorithm;
         this.tlb = new TLB(tlbSize, replacementAlgorithm);
         this.mainMemory = new MainMemory(physicalMemorySize / pageSize, pageSize);
@@ -95,7 +97,7 @@ public class MemoryManager {
             LogResults.log("No available frames in main memory. Stored VPN " + vpn + " directly to disk\n");
 
             // Update page table to indicate that this page is mapped to disk
-            PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true); // Frame number -1 to indicate disk
+            PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true, -1, Integer.MAX_VALUE); // Frame number -1 to indicate disk
             //pageTable.getEntries().add(vpn, diskEntry); // Directly use the internal map to update the entry
             pageTable.addEntryOnDisk(vpn, diskEntry);
             pageTable.setDiskPage(vpn, true);
@@ -126,7 +128,7 @@ public class MemoryManager {
         int vpn = virtualAddress / pageSize;
         int offset = virtualAddress % pageSize;
         Address virtualAddr = new Address(vpn, offset);
-        LogResults.log("\nAccess request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
+        LogResults.log("\nAccess request for virtual address: " + virtualAddress + " (" + virtualAddr.printAddress("Virtual") +  ")");
         int ppn = tlb.lookup(vpn); // TLB lookup
         Results.tlbAccesses++;
         if (ppn != -1) {
@@ -178,7 +180,7 @@ public class MemoryManager {
         int vpn = virtualAddress / pageSize;
         int offset = virtualAddress % pageSize;
         Address virtualAddr = new Address(vpn, offset);
-        LogResults.log("\nStore request for virtual address: " + virtualAddr.printAddress("Virtual") + " (Virtual address: "+ virtualAddress + ")");
+        LogResults.log("\nStore request for virtual address: " + virtualAddress + " (" + virtualAddr.printAddress("Virtual") + ")");
         int ppn = tlb.lookup(vpn); // TLB lookup
         Results.tlbAccesses++;
         if (ppn != -1) {
@@ -254,7 +256,7 @@ public class MemoryManager {
         pageTable.setDiskPage(vpn, true);
         PageTableEntry newEntry = pageTable.getEntry(vpn);
         tlb.addEntry(vpn, newEntry);
-        replacementAlgorithm.addPage(vpn);
+        // replacementAlgorithm.addPage(vpn);
         // LogResults.log("Loaded VPN " + vpn + " into frame " + frameToUse);
         return frameToUse;
     }
@@ -307,7 +309,8 @@ public class MemoryManager {
             replacementAlgorithm.updatePageAccess(vpn);
         }
         incrementOperationCount(); // Increment operation count after a load
-        LogResults.log("Loaded data: " + data + " from: " + physicalAddress.printAddress("Physical") + '\n');
+        int address = physicalAddress.getPageNumber() * pageSize + physicalAddress.getOffset();
+        LogResults.log("Loaded data: " + data + " from physical address: " + address +  " (" + physicalAddress.printAddress("Physical") + ")" + '\n');
     }
 
     /**
@@ -328,7 +331,8 @@ public class MemoryManager {
             tlb.getEntry(vpn).setDirtyBit(true);
         }
         incrementOperationCount(); // Increment operation count after a store
-        LogResults.log("Stored data: " + data + " to: " + physicalAddress.printAddress("Physical") + '\n');
+        int address = physicalAddress.getPageNumber() * pageSize + physicalAddress.getOffset();
+        LogResults.log("Stored data: " + data + " to physical address: " + address + " (" + physicalAddress.printAddress("Physical") + ")" + '\n');
     }
 
     /**
@@ -368,6 +372,7 @@ public class MemoryManager {
     public TLB getTlb() { return tlb; } // gets the current instance of the TLB
     public PageTable getPageTable() { return pageTable; } // gets the current instance of the  page table
     public SecondaryStorage getSecondaryStorage() { return secondaryStorage; } // gets the current instance of the disk
+    public Object getReplacementAlgorithm() { return this.replacementAlgorithm;}
 
     //    /**
 //     * Sets the future memory access references for the Optimal Replacement algorithm.
