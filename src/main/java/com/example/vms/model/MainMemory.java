@@ -29,9 +29,9 @@ public class MainMemory {
         this.pageSize = pageSize;
         this.frameToVirtualPageMap = new HashMap<>(); // Initialize frame-to-virtual page map
         this.memory = new HashMap<>(); // Start with an empty memory (no pages loaded)
-        for (int i = 0; i < nrFrames; i++) {
-            memory.put(i, new Page(pageSize)); // initialize memory
-        }
+//        for (int i = 0; i < nrFrames; i++) {
+//            memory.put(i, new Page(pageSize)); // initialize memory
+//        }
         this.lastFrameNr = 0;
         LogResults.log("Main memory initialized with " + nrFrames + " frames, each of size " + pageSize + " bytes.");
     }

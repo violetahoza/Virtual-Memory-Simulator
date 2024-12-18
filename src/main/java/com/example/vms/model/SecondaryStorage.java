@@ -21,8 +21,11 @@ public class SecondaryStorage {
      * @param pageSize The size of each page in the system.
      */
     public SecondaryStorage(int maxPages, int pageSize) {
-        disk = new HashMap<>();
+        this.disk = new HashMap<>();
         this.pageSize = pageSize;
+        for (int i = 0; i < maxPages; i++) {
+            disk.put(i, new Page(pageSize));
+        }
         LogResults.log("Secondary storage initialized with max pages: " + maxPages + " and page size: " + pageSize);
     }
 

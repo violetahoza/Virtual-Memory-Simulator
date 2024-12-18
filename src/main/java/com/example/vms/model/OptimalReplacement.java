@@ -22,7 +22,7 @@ public class OptimalReplacement implements ReplacementAlgorithm {
         this.futureAccesses = new ArrayList<>();
         this.activePages = new HashMap<>();
         this.currentStep = 0;
-        LogResults.log("Optimal Replacement algorithm initialized.");
+        //LogResults.log("Optimal Replacement algorithm initialized.");
     }
 
     /**

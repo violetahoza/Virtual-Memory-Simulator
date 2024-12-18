@@ -168,7 +168,7 @@
                                 <form id="loadConfig" action="/loadConfig" method="get" class="d-flex align-items-center">
                                     <div class="form-group me-2">
                                         <label for="configFile">Configuration: </label>
-                                        <select name="configFile" id="configFile" class="form-control" onchange="loadConfiguration()">
+                                        <select name="configFile" id="configFile" class="form-control">
                                             <option value="none" selected>No Configuration</option>
                                             <option th:each="config : ${configFiles}" th:value="${config}" th:text="${config}"></option>
                                         </select>
@@ -241,31 +241,38 @@
                         <button type="submit" class="btn btn-custom"><i class="fa fa-file icon"></i> Allocate</button>
                     </form>
                     <hr>
-                    <form action="/load" method="post" onsubmit="loadVPN(); return false;">
-                        <div class="form-group">
-                            <label for="loadAddress">Read from Virtual Address:</label>
-                            <input type="number" class="form-control" id="loadAddress" name="loadAddress" min="0" placeholder="Enter page number" th:value="${loadAddress}" required>
+                    <div class="form-row">
+                        <div class="form-group" style="width: 60%;">
+                            <label for="memoryAddress">Virtual Address:</label>
+                            <input type="number" class="form-control" id="memoryAddress" name="memoryAddress" min="0" placeholder="Enter virtual address" th:value="${address}" required>
                         </div>
-                        <button type="submit" class="btn btn-custom"><i class="fa fa-download icon"></i> Load</button>
-                    </form>
-                    <hr>
-                    <form action="/store" method="post" onsubmit="storeVPN(); return false;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="storeVPN">Write to Virtual Page:</label>
-                                <input type="number" class="form-control" id="storeVPN" name="storeVPN" min="0" placeholder="Enter page number"  th:value="${storeVPN}" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="storeOffset">Write to Offset:</label>
-                                <input type="number" class="form-control" id="storeOffset" name="storeOffset" min="0" placeholder="Enter offset"  th:value="${storeOffset}" required>
-                            </div>
+                        <div class="form-group" style="width: 40%;">
+                            <label for="storeData">Data (for store):</label>
+                            <input type="number" class="form-control" id="storeData" name="storeData" min="0" placeholder="Enter data" th:value="${storeData}">
                         </div>
-                        <div class="form-group">
-                            <label for="data">Enter Data to Store:</label>
-                            <input type="number" class="form-control" id="data" name="data" min="0" placeholder="Enter data to store" th:value="${storeData}" required>
+                    </div>
+                    <div class="form-row mt-2">
+                        <div class="computed-size">
+                            <p>VPN: <span id="computedVPN">0</span>, Offset: <span id="computedOffset">0</span></p>
                         </div>
-                        <button type="submit" class="btn btn-custom"><i class="fa fa-upload icon"></i> Store</button>
-                    </form>
+                    </div>
+                    <div class="form-row mt-2">
+                        <div class="col-6 pe-1">
+                            <form action="/load" method="post" id="loadForm">
+                                <input type="hidden" name="address" id="loadAddressHidden">
+                                <button type="submit" class="btn btn-custom w-100"><i class="fa fa-download icon"></i>Load from Memory</button>
+                            </form>
+                        </div>
+                        <div class="col-6 ps-1">
+                            <form action="/store" method="post" id="storeForm">
+                                <input type="hidden" name="address" id="storeAddressHidden">
+                                <input type="hidden" name="storeVPN" id="storeVPNHidden">
+                                <input type="hidden" name="storeOffset" id="storeOffsetHidden">
+                                <input type="hidden" name="data" id="storeDataHidden">
+                                <button type="submit" class="btn btn-custom w-100" id="storeButton" disabled><i class="fa fa-upload icon"></i> Store to Memory</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -290,7 +297,7 @@
                         </tr>
                         </thead>
                         <tbody id="pageTableBody">
-                        <tr th:each="entry : ${pageTableEntries}" data-vpn="${entry.key}">
+                        <tr th:each="entry : ${pageTableEntries}">
                             <td th:text="${entry.key}"></td>
                             <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
@@ -348,14 +355,14 @@
                 <div class="card-body">
                     <table class="table table-bordered" id="diskTable">
                         <thead>
-                        <tr>
+                        <tr data-vpn="${entry.key}">
                             <th>VPN</th>
                             <th>Data</th>
                             <th>Virtual Address</th>
                         </tr>
                         </thead>
                         <tbody id="diskEntries">
-                        <tr th:each="entry : ${diskEntries}" data-vpn="${entry.key}">
+                        <tr th:each="entry : ${diskEntries}">
                             <td th:text="${entry.key}"></td>
                             <td>
                                 <div th:each="dataEntry : ${entry.value.getContentsWithOffsets()}">
@@ -391,7 +398,7 @@
                         </tr>
                         </thead>
                         <tbody id="tlbBody">
-                        <tr th:each="entry : ${tlbEntries}" data-vpn="${entry.key}">
+                        <tr th:each="entry : ${tlbEntries}">
                             <td th:text="${entry.key}"></td>
                             <td th:text="${entry.value.isValid() ? '1' : '0'}"></td>
                             <td th:text="${entry.value.isDirty() ? '1' : '0'}"></td>
@@ -407,10 +414,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
     function getVirtualAddressWidth() {
         return parseInt(document.getElementById('virtualAddressWidth').value) || 0;
+    }
+    function getPageSize() {
+        return parseInt(document.getElementById('pageSize').value) || 1;
     }
     function getVirtualMemorySize() {
         const addressWidth = getVirtualAddressWidth();
@@ -423,7 +432,7 @@
     // function for virtual memory and page table size calculation
     function updateMemoryDetails() {
         const addressWidth = getVirtualAddressWidth();
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 1;
+        const pageSize = getPageSize();
 
         if (addressWidth && pageSize) {
             const virtualMemorySize = getVirtualMemorySize();
@@ -438,7 +447,7 @@
 
     function validateInputs() {
         const physicalMemorySize = parseInt(document.getElementById('physicalMemorySize').value) || 0;
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const pageSize = getPageSize();
         const diskSize = parseInt(document.getElementById('secondaryMemorySize').value) || 0;
 
         // Check if Physical Memory Size, Page Size, and Disk Size are powers of 2
@@ -468,7 +477,7 @@
 
     function validateAllocateInput() {
         const allocatePageNumber = parseInt(document.getElementById('allocatePage').value) || 0;
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
+        const pageSize = getPageSize();
         const virtualMemorySize = getVirtualMemorySize();
 
         if (allocatePageNumber >= (virtualMemorySize / pageSize)) {
@@ -479,35 +488,62 @@
     }
     document.querySelector('form[action="/allocate"]').onsubmit = validateAllocateInput;
 
-    function validateReadInput() {
-        const loadAddress = parseInt(document.getElementById('loadAddress').value) || 0;
+    function validateAddress() {
+        const address = parseInt(document.getElementById("memoryAddress").value) || 0;
         const virtualMemorySize = getVirtualMemorySize();
+        if(address >= virtualMemorySize) {
+            alert("The address must belong to the virtual address space (address between 0 - " + (virtualMemorySize - 1) + ").");
+            return false;
+        }
+        return true;
+    }
+    document.querySelector('form[action="/load"]').onsubmit = validateAddress;
+    document.querySelector('form[action="/store"]').onsubmit = validateAddress;
 
-        // Check if the address to be loaded from the memory is valid
-        if (loadAddress >= virtualMemorySize) {
-            alert("The requested address does not exist! The address must be between 0 and " + (virtualMemorySize - 1));
-            return false;
+    // Function to compute VPN and Offset
+    function computeAddressDetails() {
+        const pageSize = parseInt(document.getElementById('pageSize').value) || 1;
+        const memoryAddress = parseInt(document.getElementById('memoryAddress').value) || 0;
+        const storeData = document.getElementById('storeData').value;
+
+        // Compute VPN and Offset
+        const vpn = Math.floor(memoryAddress / pageSize);
+        const offset = memoryAddress % pageSize;
+
+        // Update VPN and Offset display
+        document.getElementById('computedVPN').textContent = vpn;
+        document.getElementById('computedOffset').textContent = offset;
+
+        // Prepare hidden inputs for load form
+        document.getElementById('loadAddressHidden').value = memoryAddress;
+
+        // Enable/disable store button based on data input
+        const storeButton = document.getElementById('storeButton');
+        if (storeData >= 0 && storeData.trim() !== '') {
+            storeButton.disabled = false;
+
+            // Prepare hidden inputs for store form
+            document.getElementById('storeAddressHidden').value = memoryAddress;
+            document.getElementById('storeVPNHidden').value = vpn;
+            document.getElementById('storeOffsetHidden').value = offset;
+            document.getElementById('storeDataHidden').value = storeData;
+        } else {
+            storeButton.disabled = true;
         }
-        return true;
+        // Validate memory address and enable/disable load button
+        const loadButton = document.querySelector('form[action="/load"] button[type="submit"]');
+        if (memoryAddress >= 0) {
+            loadButton.disabled = false;
+        } else {
+            loadButton.disabled = true;
+        }
     }
-    document.querySelector('form[action="/load"]').onsubmit = validateReadInput;
-    function validateStoreInputs() {
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
-        const storeVpn = parseInt(document.getElementById("storeVPN").value) || 0;
-        const storeOffset = parseInt(document.getElementById("storeOffset").value) || 0;
-        const virtualMemorySize = getVirtualMemorySize();
-        // Check if the write address is valid
-        if (storeVpn >= (virtualMemorySize / pageSize)) {
-            alert("The VPN cannot be greater than the nr of virtual pages.");
-            return false;
-        }
-        if (storeOffset >= pageSize) {
-            alert("The offset cannot be greater than the page size.");
-            return false;
-        }
-        return true;
-    }
-    document.querySelector('form[action="/store"]').onsubmit = validateStoreInputs;
+    // Add event listeners to address and data inputs
+    document.getElementById('memoryAddress').addEventListener('input', computeAddressDetails);
+    document.getElementById('storeData').addEventListener('input', computeAddressDetails);
+    document.getElementById('pageSize').addEventListener('input', computeAddressDetails);
+    // Initial computation on page load
+    window.addEventListener('load', computeAddressDetails);
 
     function logMessage(message) {
         const messageContainer = document.getElementById('simulationMessages');
@@ -549,77 +585,6 @@
             .catch(error => console.error('Error fetching configuration files:', error));
     });
 
-    // Handle change in configuration selection
-    function loadConfiguration() {
-        const selectedConfig = document.getElementById("configFile").value;
-
-        if (selectedConfig !== 'none') {
-            // Fetch and populate fields for the selected configuration
-            fetch(`/loadConfig?configFile=${encodeURIComponent(selectedConfig)}`)
-                .then(response => response.json())
-                .then(config => {
-                    if (config.error) {
-                        console.error('Error:', config.error);
-                    } else {
-                        document.getElementById("virtualAddressWidth").value = config.virtualAddressWidth || '';
-                        document.getElementById("pageSize").value = config.pageSize || '';
-                        document.getElementById("tlbSize").value = config.tlbSize || '';
-                        document.getElementById("physicalMemorySize").value = config.physicalMemorySize || '';
-                        document.getElementById("secondaryMemorySize").value = config.secondaryMemorySize || '';
-                        document.getElementById("replacementAlgorithm").value = config.replacementAlgorithm || '';
-
-                        console.log("Configuration loaded successfully. Locking fields.");
-                        toggleFields(false); // Lock fields
-                    }
-                })
-                .catch(error => console.error('Error fetching configuration:', error));
-        } else {
-            // Clear fields and unlock for manual editing
-            clearAndUnlockFields();
-        }
-    }
-    function clearAndUnlockFields() {
-        const fields = [
-            "virtualAddressWidth",
-            "pageSize",
-            "tlbSize",
-            "physicalMemorySize",
-            "secondaryMemorySize",
-            "replacementAlgorithm"
-        ];
-        fields.forEach(field => {
-            const inputField = document.getElementById(field);
-            if (inputField) {
-                inputField.value = '';      // Clear the field value
-                inputField.disabled = false; // Unlock the field
-            }
-        });
-    }
-
-    function toggleFields(enable) {
-        // Ensure the function runs after the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const fields = [
-                "virtualAddressWidth",
-                "pageSize",
-                "tlbSize",
-                "physicalMemorySize",
-                "secondaryMemorySize",
-                "replacementAlgorithm"
-            ];
-
-            fields.forEach(field => {
-                const inputField = document.getElementById(field);
-                if (inputField) {
-                    inputField.disabled = !enable;
-                    console.log(`Field ${field} disabled: ${!enable}`);
-                } else {
-                    console.log(`Field ${field} not found`);
-                }
-            });
-        });
-    }
-
     function executeNextStep() {
         // Disable the button to prevent multiple clicks during operation
         document.getElementById('nextStepBtn').disabled = true;
@@ -643,38 +608,78 @@
             });
     }
 
-    function highlightRow(vpn) {
-        // Ensure the function runs after the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Attempting to highlight row for VPN: " + vpn);
-            // Remove highlight from all rows first
-            const allRows = document.querySelectorAll('tr[data-vpn]');
-            allRows.forEach(row => row.classList.remove('highlight'));
-            // Find the specific row, being more flexible with comparison
-            const row = Array.from(allRows).find(r =>
-                r.getAttribute('data-vpn') == vpn.toString()
-            );
-            if (row) {
-                row.classList.add('highlight');
-                console.log("Row highlighted successfully");
-            } else {
-                console.log("No row found for VPN: " + vpn);
-            }
-        });
-    }
+    // // Handle change in configuration selection
+    // function loadConfiguration() {
+    //     const selectedConfig = document.getElementById("configFile").value;
+    //
+    //     if (selectedConfig !== 'none') {
+    //         // Fetch and populate fields for the selected configuration
+    //         fetch(`/loadConfig?configFile=${encodeURIComponent(selectedConfig)}`)
+    //             .then(response => response.json())
+    //             .then(config => {
+    //                 if (config.error) {
+    //                     console.error('Error:', config.error);
+    //                 } else {
+    //                     document.getElementById("virtualAddressWidth").value = config.virtualAddressWidth || '';
+    //                     document.getElementById("pageSize").value = config.pageSize || '';
+    //                     document.getElementById("tlbSize").value = config.tlbSize || '';
+    //                     document.getElementById("physicalMemorySize").value = config.physicalMemorySize || '';
+    //                     document.getElementById("secondaryMemorySize").value = config.secondaryMemorySize || '';
+    //                     document.getElementById("replacementAlgorithm").value = config.replacementAlgorithm || '';
+    //
+    //                     console.log("Configuration loaded successfully. Locking fields.");
+    //                     toggleFields(false); // Lock fields
+    //                 }
+    //             })
+    //             .catch(error => console.error('Error fetching configuration:', error));
+    //     } else {
+    //         // Clear fields and unlock for manual editing
+    //         clearAndUnlockFields();
+    //     }
+    // }
+    //
+    // function clearAndUnlockFields() {
+    //     const fields = [
+    //         "virtualAddressWidth",
+    //         "pageSize",
+    //         "tlbSize",
+    //         "physicalMemorySize",
+    //         "secondaryMemorySize",
+    //         "replacementAlgorithm"
+    //     ];
+    //     fields.forEach(field => {
+    //         const inputField = document.getElementById(field);
+    //         if (inputField) {
+    //             inputField.value = '';      // Clear the field value
+    //             inputField.disabled = false; // Unlock the field
+    //         }
+    //     });
+    // }
+    //
+    // function toggleFields(enable) {
+    //     // Ensure the function runs after the DOM is fully loaded
+    //     document.addEventListener('DOMContentLoaded', () => {
+    //         const fields = [
+    //             "virtualAddressWidth",
+    //             "pageSize",
+    //             "tlbSize",
+    //             "physicalMemorySize",
+    //             "secondaryMemorySize",
+    //             "replacementAlgorithm"
+    //         ];
+    //
+    //         fields.forEach(field => {
+    //             const inputField = document.getElementById(field);
+    //             if (inputField) {
+    //                 inputField.disabled = !enable;
+    //                 console.log(`Field ${field} disabled: ${!enable}`);
+    //             } else {
+    //                 console.log(`Field ${field} not found`);
+    //             }
+    //         });
+    //     });
+    // }
 
-    function loadVPN() {
-        console.log("loadVPN function called"); // Debugging log
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 0;
-        const loadAddress = parseInt(document.getElementById('loadAddress').value) || 0;
-        const vpn = Math.floor(loadAddress / pageSize);
-        highlightRow(vpn);  // Highlight the row in the page table
-    }
-    function storeVPN() {
-        console.log("storeVPN function called"); // Debugging log
-        const vpn = parseInt(document.getElementById('storeVPN').value) || 0;  // Get the VPN from the form
-        highlightRow(vpn);  // Highlight the row in the page table
-    }
 </script>
 </body>
 </html>

@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * memory management, and simulation state reset.
  */
 @Controller
-@SessionAttributes({"loadAddress", "storeAddress", "storeData"})
+@SessionAttributes({"address", "storeData"})
 public class MemoryController {
     @Autowired
     private HttpSession session;
@@ -135,7 +135,8 @@ public class MemoryController {
         model.addAttribute("pageTableSize", pageTableSize);
 
         if (replacementAlgorithm.equalsIgnoreCase("Optimal")) {
-            OptimalReplacement optimalReplacement = (OptimalReplacement) memoryManager.getReplacementAlgorithm();
+            OptimalReplacement optimalReplacement = new OptimalReplacement();
+            //OptimalReplacement optimalReplacement = (OptimalReplacement) memoryManager.getReplacementAlgorithm();
             memoryManager.getPageTable().updateFutureAccesses(optimalReplacement); // Update future accesses for the page table
         }
 
@@ -147,12 +148,12 @@ public class MemoryController {
         model.addAttribute("logMessages", logMessages);
 
         // Add default values for attributes that might not be set yet
-        if (!model.containsAttribute("loadAddress"))
-            model.addAttribute("loadAddress", 0);
-        if (!model.containsAttribute("storeOffset"))
-            model.addAttribute("storeOffset", 0);
-        if (!model.containsAttribute("storeVPN"))
-            model.addAttribute("storeVPN", 0);
+        if (!model.containsAttribute("address"))
+            model.addAttribute("address", 0);
+//        if (!model.containsAttribute("storeOffset"))
+//            model.addAttribute("storeOffset", 0);
+//        if (!model.containsAttribute("storeVPN"))
+//            model.addAttribute("storeVPN", 0);
         if (!model.containsAttribute("storeData"))
             model.addAttribute("storeData", 0);
 
@@ -320,34 +321,32 @@ public class MemoryController {
      * @return the view name to redirect to
      */
     @PostMapping("/load")
-    public String loadAddress(@RequestParam("loadAddress") int address, Model model) {
+    public String loadAddress(@RequestParam("address") int address, Model model) {
         logMessages.clear();
         // Simulate loading the address
         memoryManager.load(address);
         // Add the address to the model to display
-        model.addAttribute("loadAddress", address);
+        model.addAttribute("address", address);
         // LogResults.log("Loaded address: " + address);
         return "redirect:/";
     }
 
     /**
      * Simulates storing data at a specified virtual address.
-     * @param vpn the virtual page number to store data at
-     * @param offset the offset in the page to store data in
+     * @param address the virtual address to store data at
      * @param data the data to store
      * @param model the model to add attributes to for the view
      * @return the view name to redirect to
      */
     @PostMapping("/store")
-    public String storeAddress(@RequestParam("storeVPN") int vpn, @RequestParam("storeOffset") int offset, @RequestParam("data") int data, Model model) {
+    public String storeAddress(@RequestParam("address") int address, @RequestParam("data") int data, Model model) {
         logMessages.clear();
         // Simulate storing the data at the given address
-        int address = vpn * pageSize + offset;
+        //int address = vpn * pageSize + offset;
         memoryManager.store(address, data);
 
         // Add the address and data to the model to display
-        model.addAttribute("storeVPN", vpn);
-        model.addAttribute("storeOffset", offset);
+        model.addAttribute("address", address);
         model.addAttribute("storeData", data);
         // LogResults.log("Stored data " + data + " at address: " + address);
         return "redirect:/";
@@ -380,7 +379,7 @@ public class MemoryController {
     @PostMapping("/reset")
     public String resetSimulation(Model model, SessionStatus status, RedirectAttributes redirectAttributes) {
         // Print memory contents for debugging purposes
-        memoryManager.printMemoryContents();
+        //memoryManager.printMemoryContents();
         Results.logStats();
         // Reset the results and memory manager state
         Results.reset();
@@ -405,9 +404,7 @@ public class MemoryController {
         model.addAttribute("physicalMemorySize", physicalMemorySize);
         model.addAttribute("secondaryMemorySize", secondaryMemorySize);
         model.addAttribute("replacementAlgorithm", "FIFO");
-        model.addAttribute("loadAddress", 0);
-        model.addAttribute("storeVPN", 0);
-        model.addAttribute("storeOffset", 0);
+        model.addAttribute("address", 0);
         model.addAttribute("storeData", 0);
         model.addAttribute("virtualMemorySize", virtualMemorySize);
         model.addAttribute("pageTableSize", pageTableSize);

@@ -73,46 +73,76 @@ public class MemoryManager {
      * @param vpn The virtual page number to be allocated.
      */
     public void allocatePage(int vpn) {
-        if (vpn < 0 || vpn >= pageTable.getEntries().size()) { // Check if the VPN is within a valid range
-            LogResults.log("Invalid page number " + vpn);
+        if (vpn < 0 || vpn >= pageTable.getEntries().size()) { // validate VPN range
+            LogResults.log("Invalid VPN: " + vpn);
             return;
         }
-        if (pageTable.isValid(vpn)) {  // Check if the VPN is already allocated
+        if (pageTable.isValid(vpn)) { // check if the VPN is already allocated
             LogResults.log("VPN " + vpn + " is already allocated.");
             return;
         }
-
-        int unmappedFrame = -1; // Find the first unmapped frame in the main memory
-        for (int i = 0; i < mainMemory.getMemory().size(); i++) {
-            if (!pageTable.contains(i)) {
-                unmappedFrame = i;
-                break;
-            }
-        }
-        if (unmappedFrame == -1) { // no unmapped frame is found
-            LogResults.log("\nNo unmapped frames available in main memory.");
-            // Store the page directly in secondary storage
-            Page page = new Page(pageSize); // Create a new page for this virtual page
-            secondaryStorage.store(vpn, page); // Store it directly in secondary storage
-            LogResults.log("No available frames in main memory. Stored VPN " + vpn + " directly to disk\n");
-
-            // Update page table to indicate that this page is mapped to disk
-            PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true, -1, Integer.MAX_VALUE); // Frame number -1 to indicate disk
-            //pageTable.getEntries().add(vpn, diskEntry); // Directly use the internal map to update the entry
+        int freeFrame = mainMemory.getNextAvailableFrame(); // check for a free frame in main memory
+        if (freeFrame != -1) { // free frame found
+            LogResults.log("Allocating VPN " + vpn + " to free frame " + freeFrame);
+            Page newPage = new Page(pageSize);
+            mainMemory.loadPageIntoMemory(newPage, freeFrame, vpn); // load a new page into the free frame
+            replacementAlgorithm.addPage(vpn);
+            pageTable.addEntry(vpn, freeFrame);
+            //pageTable.setDiskPage(vpn, false); // mark as no longer on disk
+            //secondaryStorage.store(vpn, newPage); // backup to secondary storage
+            LogResults.log("Mapped VPN " + vpn + " to frame " + freeFrame + " in main memory.");
+            //LogResults.log("Backup of VPN " + vpn + " stored in secondary storage.");
+        } else {
+            LogResults.log("No free frames in main memory for VPN " + vpn + ". Storing directly to secondary storage.");
+            Page diskPage = new Page(pageSize);
+            secondaryStorage.store(vpn, diskPage);
+            // Update page table for disk-only mapping
+            PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true, -1, Integer.MAX_VALUE);
             pageTable.addEntryOnDisk(vpn, diskEntry);
-            pageTable.setDiskPage(vpn, true);
-            return;
         }
-
-        Page page = new Page(pageSize); // Create a new page and bring it into the unmapped frame
-        mainMemory.loadPageIntoMemory(page, unmappedFrame, vpn); // Load the page into the unmapped frame
-        replacementAlgorithm.addPage(vpn);
-        secondaryStorage.store(vpn, page); // Store a backup copy of the page in secondary storage
-        pageTable.setDiskPage(unmappedFrame, true);
-        LogResults.log("\nStored a copy of VPN " + vpn + " in secondary storage.");
-        pageTable.addEntry(vpn, unmappedFrame); // Update the page table to map the VPN to the unmapped frame
-        LogResults.log("Mapped VPN " + vpn + " to frame " + unmappedFrame + " in main memory.\n");
     }
+
+//    public void allocatePage(int vpn) {
+//        if (vpn < 0 || vpn >= pageTable.getEntries().size()) { // Check if the VPN is within a valid range
+//            LogResults.log("Invalid page number " + vpn);
+//            return;
+//        }
+//        if (pageTable.isValid(vpn)) {  // Check if the VPN is already allocated
+//            LogResults.log("VPN " + vpn + " is already allocated.");
+//            return;
+//        }
+//
+//        int unmappedFrame = -1; // Find the first unmapped frame in the main memory
+//        for (int i = 0; i < mainMemory.getMemory().size(); i++) {
+//            if (!pageTable.contains(i)) {
+//                unmappedFrame = i;
+//                break;
+//            }
+//        }
+//
+//        if (unmappedFrame == -1) { // no unmapped frame is found
+//            LogResults.log("\nNo unmapped frames available in main memory.");
+//            // Store the page directly in secondary storage
+//            Page page = new Page(pageSize); // Create a new page for this virtual page
+//            secondaryStorage.store(vpn, page); // Store it directly in secondary storage
+//            LogResults.log("No available frames in main memory. Stored VPN " + vpn + " directly to disk\n");
+//
+//            // Update page table to indicate that this page is mapped to disk
+//            PageTableEntry diskEntry = new PageTableEntry(-1, false, false, false, true, -1, Integer.MAX_VALUE); // Frame number -1 to indicate disk
+//            //pageTable.getEntries().add(vpn, diskEntry); // Directly use the internal map to update the entry
+//            pageTable.addEntryOnDisk(vpn, diskEntry);
+//            pageTable.setDiskPage(vpn, true);
+//        }
+//
+//        Page page = new Page(pageSize); // Create a new page and bring it into the unmapped frame
+//        mainMemory.loadPageIntoMemory(page, unmappedFrame, vpn); // Load the page into the unmapped frame
+//        replacementAlgorithm.addPage(vpn);
+//        secondaryStorage.store(vpn, page); // Store a backup copy of the page in secondary storage
+//        pageTable.setDiskPage(unmappedFrame, true);
+//        LogResults.log("\nStored a copy of VPN " + vpn + " in secondary storage.");
+//        pageTable.addEntry(vpn, unmappedFrame); // Update the page table to map the VPN to the unmapped frame
+//        LogResults.log("Mapped VPN " + vpn + " to frame " + unmappedFrame + " in main memory.\n");
+//    }
 
     /**
      * Loads data from a virtual address by performing TLB and page table lookups,
@@ -256,7 +286,7 @@ public class MemoryManager {
         pageTable.setDiskPage(vpn, true);
         PageTableEntry newEntry = pageTable.getEntry(vpn);
         tlb.addEntry(vpn, newEntry);
-        // replacementAlgorithm.addPage(vpn);
+         replacementAlgorithm.addPage(vpn);
         // LogResults.log("Loaded VPN " + vpn + " into frame " + frameToUse);
         return frameToUse;
     }
@@ -372,7 +402,7 @@ public class MemoryManager {
     public TLB getTlb() { return tlb; } // gets the current instance of the TLB
     public PageTable getPageTable() { return pageTable; } // gets the current instance of the  page table
     public SecondaryStorage getSecondaryStorage() { return secondaryStorage; } // gets the current instance of the disk
-    public Object getReplacementAlgorithm() { return this.replacementAlgorithm;}
+    //public Object getReplacementAlgorithm() { return this.replacementAlgorithm;}
 
     //    /**
 //     * Sets the future memory access references for the Optimal Replacement algorithm.
