@@ -100,10 +100,28 @@
             overflow-y: auto;
             max-height: 490px;
         }
-        .highlight {
-            background-color: #a60543;
-            color: white;
-            font-weight: bold;
+        .highlight-tlb {
+            background-color: #ff6b6b !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            opacity: 1 !important;
+            z-index: 100 !important;
+        }
+
+        .highlight-pagetable {
+            background-color: #4ecdc4 !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            opacity: 1 !important;
+            z-index: 100 !important;
+        }
+
+        .highlight-memory {
+            background-color: #a60543 !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            opacity: 1 !important;
+            z-index: 100 !important;
         }
     </style>
 </head>
@@ -178,6 +196,12 @@
                                     </button>
                                 </form>
                                 <form action="/nextOperation" method="get" class="d-flex align-items-center">
+                                    <!-- Hidden input fields or rendered data from the server -->
+                                    <input type="hidden" id="highlightVpn" th:value="${highlightVpn}">
+                                    <input type="hidden" id="operationType" th:value="${operationType}">
+                                    <input type="hidden" id="highlightAddress" th:value="${highlightAddress}">
+                                    <input type="hidden" id="highlightOffset" th:value="${highlightOffset}">
+
                                     <button id="nextStepBtn" type="submit" class="btn btn-custom btn-sm" onclick="executeNextStep()">
                                         <i class="fa fa-play me-2"></i>Execute Next Operation
                                     </button>
@@ -486,7 +510,6 @@
         }
         return true;
     }
-    document.querySelector('form[action="/allocate"]').onsubmit = validateAllocateInput;
 
     function validateAddress() {
         const address = parseInt(document.getElementById("memoryAddress").value) || 0;
@@ -497,12 +520,10 @@
         }
         return true;
     }
-    document.querySelector('form[action="/load"]').onsubmit = validateAddress;
-    document.querySelector('form[action="/store"]').onsubmit = validateAddress;
 
     // Function to compute VPN and Offset
     function computeAddressDetails() {
-        const pageSize = parseInt(document.getElementById('pageSize').value) || 1;
+        const pageSize = getPageSize();
         const memoryAddress = parseInt(document.getElementById('memoryAddress').value) || 0;
         const storeData = document.getElementById('storeData').value;
 
@@ -521,7 +542,6 @@
         const storeButton = document.getElementById('storeButton');
         if (storeData >= 0 && storeData.trim() !== '') {
             storeButton.disabled = false;
-
             // Prepare hidden inputs for store form
             document.getElementById('storeAddressHidden').value = memoryAddress;
             document.getElementById('storeVPNHidden').value = vpn;
@@ -532,11 +552,7 @@
         }
         // Validate memory address and enable/disable load button
         const loadButton = document.querySelector('form[action="/load"] button[type="submit"]');
-        if (memoryAddress >= 0) {
-            loadButton.disabled = false;
-        } else {
-            loadButton.disabled = true;
-        }
+        loadButton.disabled = memoryAddress < 0;
     }
     // Add event listeners to address and data inputs
     document.getElementById('memoryAddress').addEventListener('input', computeAddressDetails);
@@ -558,127 +574,268 @@
             defaultMessage.style.display = 'none';
         }
     }
+
     window.onload = function() {
         const logMessages = /*[[${logMessages}]]*/ []; // Fetch logMessages from the model
         logMessages.forEach(message => {
             logMessage(message);
         });
     };
-    function clearMessages() {
-        const messageList = document.getElementById('simulationMessagesList');
-        messageList.innerHTML = '';
+
+    function clearHighlights() {
+        console.log("Clearing highlights...");
+        ['tlbTable', 'pageTable', 'mainMemoryTable', 'diskTable'].forEach(tableId => {
+            const table = document.getElementById(tableId);
+            if (table) {
+                const rows = table.getElementsByTagName('tr');
+                for (let row of rows) {
+                    row.classList.remove(
+                        'highlight-tlb',
+                        'highlight-pagetable',
+                        'highlight-memory',
+                    );
+                }
+            }
+        });
     }
 
-    // Fetch configurations dynamically and populate the dropdown
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('/getConfigFiles')
-            .then(response => response.json())
-            .then(configs => {
-                const configDropdown = document.getElementById('configFile');
-                configs.forEach(config => {
-                    const option = document.createElement('option');
-                    option.value = config;
-                    option.textContent = config;
-                    configDropdown.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error fetching configuration files:', error));
+    async function highlightRow(tableId, searchColumn, searchValue, highlightClass) {
+        return new Promise((resolve, reject) => {
+            console.log(`Highlighting ${tableId} - Column: ${searchColumn}, Value: ${searchValue}, Class: ${highlightClass}`);
+            const table = document.getElementById(tableId);
+
+            if (!table) {
+                console.error(`Table ${tableId} not found`);
+                reject(`Table ${tableId} not found`);
+                return;
+            }
+
+            const rows = table.getElementsByTagName('tr');
+            for (let row of rows) {
+                if (row.cells.length > 0 && row.cells[searchColumn]?.textContent == searchValue) {
+                    row.classList.add(highlightClass);
+                    resolve();
+                    return;
+                }
+            }
+
+            console.error(`No matching row found in ${tableId} for value ${searchValue}`);
+            reject(`No matching row found in ${tableId}`);
+        });
+    }
+
+    async function handleMemoryOperation(address) {
+        console.log('Starting handleMemoryOperation with address:', address);
+        const pageSize = parseInt(document.getElementById('pageSize').value);
+        const vpn = Math.floor(address / pageSize);
+        console.log('Calculated VPN:', vpn);
+
+        clearHighlights();
+        console.log('Cleared existing highlights');
+
+        // Highlight TLB entry
+        console.log('Attempting to highlight TLB entry');
+        highlightRow('tlbTable', 0, vpn, 'highlight-tlb');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Highlight page table entry
+        console.log('Attempting to highlight page table entry');
+        highlightRow('pageTable', 0, vpn, 'highlight-pagetable');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Check page table entry and highlight either memory or disk
+        const pageTableRows = document.getElementById('pageTable').getElementsByTagName('tr');
+        for (let row of pageTableRows) {
+            if (row.cells.length > 0 && row.cells[0].textContent == vpn) {
+                const isValid = row.cells[1].textContent === "1";
+                const ppn = row.cells[4].textContent;
+                if (isValid && ppn !== "") {
+                    highlightRow('mainMemoryTable', 0, ppn, 'highlight-memory');
+                } else {
+                    highlightRow('diskTable', 0, vpn, 'highlight-memory');
+                }
+                break;
+            }
+        }
+    }
+
+    // Add event listeners for allocate, load and store operations
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadForm = document.querySelector('form[action="/load"]');
+        if (loadForm) {
+            loadForm.addEventListener('submit', async function(e) {
+                if(!validateAddress())
+                    return false;
+                e.preventDefault();
+                const address = parseInt(document.getElementById('loadAddressHidden').value);
+                const vpn = Math.floor(address / getPageSize());
+                const tableStates = getTableHighlightStates(vpn);
+                saveHighlightState(tableStates);
+                await handleMemoryOperation(address);
+                this.submit();
+            });
+        }
+
+        const storeForm = document.querySelector('form[action="/store"]');
+        if (storeForm) {
+            storeForm.addEventListener('submit', async function(e) {
+                if(!validateAddress())
+                    return false;
+                e.preventDefault();
+                const address = parseInt(document.getElementById('storeAddressHidden').value);
+                const vpn = Math.floor(address / getPageSize());
+                const tableStates = getTableHighlightStates(vpn);
+                saveHighlightState(tableStates);
+                await handleMemoryOperation(address);
+                this.submit();
+            });
+        }
+
+        const allocateForm = document.querySelector('form[action="/allocate"]');
+        if (allocateForm) {
+            allocateForm.addEventListener('submit', async function(e){
+                if (!validateAllocateInput()) return false;
+                e.preventDefault();
+                const pageNumber = parseInt(document.getElementById('allocatePage').value);
+                clearHighlights();
+                highlightRow('pageTable', 0, pageNumber, 'highlight-pagetable');
+                const tableStates = getTableHighlightStates(pageNumber);
+                saveHighlightState(tableStates);
+                this.submit();
+            });
+        }
     });
 
-    function executeNextStep() {
-        // Disable the button to prevent multiple clicks during operation
-        document.getElementById('nextStepBtn').disabled = true;
+    function getTableHighlightStates(vpn, ppn = null) {
+        const tableStates = [
+            { tableId: 'pageTable', searchColumn: 0, searchValue: vpn, highlightClass: 'highlight-pagetable' },
+            { tableId: 'tlbTable', searchColumn: 0, searchValue: vpn, highlightClass: 'highlight-tlb' }
+        ];
 
-        // Make an AJAX call to the server to process the next operation
-        fetch("/nextOperation")
-            .then(response => response.redirected ? window.location.href = response.url : response.json())
-            .then(data => {
-                // If there are still operations left, delay the next step
-                if (data && data.hasMoreOperations) {
-                    // Delay the next operation by 1 second (or any value you prefer)
-                    setTimeout(executeNextStep, 1000);
+        const pageTableRows = document.getElementById('pageTable').getElementsByTagName('tr');
+        for (let row of pageTableRows) {
+            if (row.cells.length > 0 && row.cells[0].textContent == vpn) {
+                const isValid = row.cells[1].textContent === "1";
+                const foundPpn = ppn || row.cells[4].textContent;
+
+                if (isValid && foundPpn !== "") {
+                    tableStates.push({
+                        tableId: 'mainMemoryTable',
+                        searchColumn: 0,
+                        searchValue: foundPpn,
+                        highlightClass: 'highlight-memory'
+                    });
                 } else {
-                    //alert("All operations completed.");
-                    document.getElementById('nextStepBtn').disabled = false;  // Enable button
+                    tableStates.push({
+                        tableId: 'diskTable',
+                        searchColumn: 0,
+                        searchValue: vpn,
+                        highlightClass: 'highlight-memory'
+                    });
                 }
-            })
-            .catch(error => {
-                console.error('Error during next operation execution:', error);
-                document.getElementById('nextStepBtn').disabled = false;  // Enable button
-            });
+                break;
+            }
+        }
+
+        return tableStates;
     }
 
-    // // Handle change in configuration selection
-    // function loadConfiguration() {
-    //     const selectedConfig = document.getElementById("configFile").value;
-    //
-    //     if (selectedConfig !== 'none') {
-    //         // Fetch and populate fields for the selected configuration
-    //         fetch(`/loadConfig?configFile=${encodeURIComponent(selectedConfig)}`)
-    //             .then(response => response.json())
-    //             .then(config => {
-    //                 if (config.error) {
-    //                     console.error('Error:', config.error);
-    //                 } else {
-    //                     document.getElementById("virtualAddressWidth").value = config.virtualAddressWidth || '';
-    //                     document.getElementById("pageSize").value = config.pageSize || '';
-    //                     document.getElementById("tlbSize").value = config.tlbSize || '';
-    //                     document.getElementById("physicalMemorySize").value = config.physicalMemorySize || '';
-    //                     document.getElementById("secondaryMemorySize").value = config.secondaryMemorySize || '';
-    //                     document.getElementById("replacementAlgorithm").value = config.replacementAlgorithm || '';
-    //
-    //                     console.log("Configuration loaded successfully. Locking fields.");
-    //                     toggleFields(false); // Lock fields
-    //                 }
-    //             })
-    //             .catch(error => console.error('Error fetching configuration:', error));
-    //     } else {
-    //         // Clear fields and unlock for manual editing
-    //         clearAndUnlockFields();
-    //     }
-    // }
-    //
-    // function clearAndUnlockFields() {
-    //     const fields = [
-    //         "virtualAddressWidth",
-    //         "pageSize",
-    //         "tlbSize",
-    //         "physicalMemorySize",
-    //         "secondaryMemorySize",
-    //         "replacementAlgorithm"
-    //     ];
-    //     fields.forEach(field => {
-    //         const inputField = document.getElementById(field);
-    //         if (inputField) {
-    //             inputField.value = '';      // Clear the field value
-    //             inputField.disabled = false; // Unlock the field
-    //         }
-    //     });
-    // }
-    //
-    // function toggleFields(enable) {
-    //     // Ensure the function runs after the DOM is fully loaded
-    //     document.addEventListener('DOMContentLoaded', () => {
-    //         const fields = [
-    //             "virtualAddressWidth",
-    //             "pageSize",
-    //             "tlbSize",
-    //             "physicalMemorySize",
-    //             "secondaryMemorySize",
-    //             "replacementAlgorithm"
-    //         ];
-    //
-    //         fields.forEach(field => {
-    //             const inputField = document.getElementById(field);
-    //             if (inputField) {
-    //                 inputField.disabled = !enable;
-    //                 console.log(`Field ${field} disabled: ${!enable}`);
-    //             } else {
-    //                 console.log(`Field ${field} not found`);
-    //             }
-    //         });
-    //     });
-    // }
+    function saveHighlightState(tableStates) {
+        // `tableStates` is an array of objects, each containing {tableId, searchColumn, searchValue, highlightClass}
+        sessionStorage.setItem('highlightStates', JSON.stringify(tableStates));
+    }
+
+    function applySavedHighlights() {
+        const observer = new MutationObserver((mutationsList, observer) => {
+            const states = JSON.parse(sessionStorage.getItem('highlightStates'));
+            if (states && Array.isArray(states)) {
+                states.forEach(state => {
+                    highlightRow(state.tableId, state.searchColumn, state.searchValue, state.highlightClass);
+                });
+                sessionStorage.removeItem('highlightStates');
+            }
+            observer.disconnect(); // Stop observing once highlights are applied
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    window.addEventListener('load', applySavedHighlights);
+    window.addEventListener('store', applySavedHighlights);
+    window.addEventListener('allocate', applySavedHighlights);
+    window.addEventListener('nextOperation', applySavedHighlights);
+
+    async function executeNextStep() {
+        // Disable the button immediately to prevent double-clicks
+        const nextStepBtn = document.getElementById('nextStepBtn');
+        if (nextStepBtn) {
+            nextStepBtn.disabled = true;
+        }
+
+        try{
+            // Fetch the next operation info
+            const response = await fetch('/api/preview-next-operation');
+            const preview = await response.json();
+
+            if (preview.completed) {
+                console.log('All operations completed');
+                if (nextStepBtn) {
+                    nextStepBtn.disabled = false;
+                }
+                return;
+            }
+
+            // Clear existing highlights
+            clearHighlights();
+
+            const vpn = preview.vpn;
+            const operationType = preview.type;
+            const address = preview.address;
+            const offset = preview.offset;
+
+            if (operationType === "Store") {
+                console.log(`Operation: ${operationType}, VPN: ${vpn}, Offset: ${offset}`);
+            } else if (operationType === "Load") {
+                console.log(`Operation: ${operationType}, Address: ${address}`);
+            } else if (operationType === "Allocate") {
+                console.log(`Operation: ${operationType}, VPN: ${vpn}`);
+            }
+
+            if (vpn !== -1) {
+                let tableStates = [];
+                if (operationType === "Allocate") {
+                    //await highlightRow("pageTable", 0, vpn, "highlight-pagetable");
+                    const tableStates = getTableHighlightStates(vpn);
+                    saveHighlightState(tableStates);
+                } else if (operationType === "Load" || operationType === "Store") {
+                    const vpn1 = Math.floor(address / getPageSize());
+                    let tableStates = [];
+                    if(operationType === "Load") {
+                        //await handleMemoryOperation(address);
+                        tableStates = getTableHighlightStates(vpn1);
+                    }
+                    else {
+                        //await handleMemoryOperation(vpn * getPageSize() + offset);
+                        tableStates = getTableHighlightStates(vpn);
+                    }
+                    saveHighlightState(tableStates);
+                }
+
+            }
+            // Add a small delay to ensure highlights are visible before the page reloads
+            //await new Promise(resolve => setTimeout(resolve, 200));
+
+            const form = document.querySelector('form[action="/nextOperation"]');
+            if (form) {
+                form.submit();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (nextStepBtn) {
+                nextStepBtn.disabled = false;
+            }
+        }
+    }
 
 </script>
 </body>

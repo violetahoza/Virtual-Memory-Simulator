@@ -275,8 +275,9 @@ public class MemoryController {
      * Updates the current step in the session and handles page eviction if needed.
      * @param model The model to hold log messages and updates for rendering on the view.
      * @return A redirection to the main page after performing the operation.
-     */    @GetMapping("/nextOperation")
-    public String nextOperation(Model model) {
+     */
+    @GetMapping("/nextOperation")
+    public String nextOperation(Model model, RedirectAttributes redirectAttributes) {
         logMessages.clear();
         // Get operations and current step from the session
         List<Operation> operations = (List<Operation>) session.getAttribute("operations");
@@ -285,10 +286,20 @@ public class MemoryController {
         if (operations == null || currentStep == null || currentStep >= operations.size()) {
             logMessages.add("All operations are completed.");
             model.addAttribute("logMessages", logMessages);
+            redirectAttributes.addFlashAttribute("highlightVpn", -1);
+            redirectAttributes.addFlashAttribute("highlightOffset", -1);
+            redirectAttributes.addFlashAttribute("operationType", null);
+            redirectAttributes.addFlashAttribute("highlightAddress", -1);
             return "redirect:/";  // Redirect after all operations
         }
         // Get the current operation to perform
         Operation operation = operations.get(currentStep);
+
+        redirectAttributes.addFlashAttribute("highlightVpn", operation.getVpn());
+        redirectAttributes.addFlashAttribute("highlightOffset", operation.getOffset());
+        redirectAttributes.addFlashAttribute("operationType", operation.getType());
+        redirectAttributes.addFlashAttribute("highlightAddress", operation.getAddress());
+
         // Execute the operation
         switch (operation.getType()) {
             case "Allocate":
@@ -312,6 +323,49 @@ public class MemoryController {
         // Add log messages to the model for the view
         model.addAttribute("logMessages", logMessages);
         return "redirect:/";  // Redirect back to the main page
+    }
+
+    /**
+     * This endpoint previews the next operation in the sequence based on the current step.
+     *
+     * The method retrieves the current operation from the session attributes and provides a preview
+     * of the next operation. If the current step is null, exceeds the size of the operations list,
+     * or the operations list is not available, it returns a response indicating that all operations
+     * are completed. Otherwise, it returns details of the next operation, including the VPN, offset,
+     * operation type, address, and data.
+     *
+     * @return A map containing information about the next operation, including:
+     *         - "completed": a boolean indicating whether all operations are completed (true if done, false if there is a next operation)
+     *         - "vpn": the VPN value of the next operation (if available)
+     *         - "offset": the offset value of the next operation (if available)
+     *         - "type": the type of the next operation (if available)
+     *         - "address": the address of the next operation (if available)
+     *         - "data": the data associated with the next operation (if available)
+     *
+     *         If no operations are left to preview, the map will contain only the "completed" key set to true.
+     */
+    @GetMapping("/api/preview-next-operation")
+    @ResponseBody
+    public Map<String, Object> previewNextOperation() {
+        Map<String, Object> preview = new HashMap<>();
+
+        List<Operation> operations = (List<Operation>) session.getAttribute("operations");
+        Integer currentStep = (Integer) session.getAttribute("currentStep");
+
+        if (operations == null || currentStep == null || currentStep >= operations.size()) {
+            preview.put("completed", true);
+            return preview;
+        }
+
+        Operation nextOperation = operations.get(currentStep);
+        preview.put("completed", false);
+        preview.put("vpn", nextOperation.getVpn());
+        preview.put("offset", nextOperation.getOffset());
+        preview.put("type", nextOperation.getType());
+        preview.put("address", nextOperation.getAddress());
+        preview.put("data", nextOperation.getData());
+
+        return preview;
     }
 
     /**
@@ -435,6 +489,7 @@ public class MemoryController {
         data.put("mainMemory", memoryManager.getMainMemory().getMemory());
         data.put("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
+
         return data;
     }
 
