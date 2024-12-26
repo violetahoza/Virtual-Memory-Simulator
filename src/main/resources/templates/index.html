@@ -40,7 +40,7 @@
             border-radius: 0.375rem;
             margin-bottom: 0.5rem;
             background-color: #ffe5ec;
-            color: #A88CA4;
+            color: #22223b;
             font-size: 0.9rem;
         }
         .container {
@@ -50,7 +50,7 @@
             font-size: 1rem;
             margin-bottom: 0.4rem;
             background-color: #ffe5ec;
-            color: #A88CA4;
+            color: #22223b;
         }
         .icon {
             font-size: 18px;
@@ -115,7 +115,6 @@
             opacity: 1 !important;
             z-index: 100 !important;
         }
-
         .highlight-memory {
             background-color: #a60543 !important;
             color: white !important;
@@ -439,21 +438,25 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Function to get the virtual address width from the input field
     function getVirtualAddressWidth() {
         return parseInt(document.getElementById('virtualAddressWidth').value) || 0;
     }
+    // Function to get the page size from the input field
     function getPageSize() {
         return parseInt(document.getElementById('pageSize').value) || 1;
     }
+    // Function to calculate the virtual memory size based on the virtual address width
     function getVirtualMemorySize() {
         const addressWidth = getVirtualAddressWidth();
-        return Math.pow(2, addressWidth);
+        return Math.pow(2, addressWidth); // Virtual memory size is 2^addressWidth
     }
+    // Function to check if a number is a power of two
     function isPowerOfTwo(n) {
-        return n > 0 && (n & (n - 1)) === 0;
+        return n > 0 && (n & (n - 1)) === 0; // Returns true if n is a power of two
     }
 
-    // function for virtual memory and page table size calculation
+    // Function to update the memory details like virtual memory size and page table size
     function updateMemoryDetails() {
         const addressWidth = getVirtualAddressWidth();
         const pageSize = getPageSize();
@@ -462,13 +465,16 @@
             const virtualMemorySize = getVirtualMemorySize();
             const pageTableSize = virtualMemorySize / pageSize;
 
+            // Update the UI with computed memory sizes
             document.getElementById('virtualMemorySize').innerText = virtualMemorySize.toLocaleString();
             document.getElementById('pageTableSize').innerText = pageTableSize.toLocaleString();
         }
     }
+    // Add event listeners for updating memory details when inputs change
     document.getElementById('pageSize').addEventListener('input', updateMemoryDetails);
     document.getElementById('virtualAddressWidth').addEventListener('input', updateMemoryDetails);
 
+    // Function to validate physical memory size, page size, and disk size inputs
     function validateInputs() {
         const physicalMemorySize = parseInt(document.getElementById('physicalMemorySize').value) || 0;
         const pageSize = getPageSize();
@@ -499,11 +505,13 @@
     // Attach validation to form submission
     document.querySelector('form[action="/configure"]').onsubmit = validateInputs;
 
+    // Function to validate allocation input
     function validateAllocateInput() {
         const allocatePageNumber = parseInt(document.getElementById('allocatePage').value) || 0;
         const pageSize = getPageSize();
         const virtualMemorySize = getVirtualMemorySize();
 
+        // Check if the allocated page number is within the valid range
         if (allocatePageNumber >= (virtualMemorySize / pageSize)) {
             alert("The VPN cannot be greater than the nr of virtual pages.");
             return false;
@@ -511,9 +519,12 @@
         return true;
     }
 
+    // Function to validate the address input for memory operations
     function validateAddress() {
         const address = parseInt(document.getElementById("memoryAddress").value) || 0;
         const virtualMemorySize = getVirtualMemorySize();
+
+        // Ensure the address is within the valid virtual memory range
         if(address >= virtualMemorySize) {
             alert("The address must belong to the virtual address space (address between 0 - " + (virtualMemorySize - 1) + ").");
             return false;
@@ -521,7 +532,7 @@
         return true;
     }
 
-    // Function to compute VPN and Offset
+    // Function to compute VPN (Virtual Page Number) and offset from a memory address
     function computeAddressDetails() {
         const pageSize = getPageSize();
         const memoryAddress = parseInt(document.getElementById('memoryAddress').value) || 0;
@@ -554,13 +565,14 @@
         const loadButton = document.querySelector('form[action="/load"] button[type="submit"]');
         loadButton.disabled = memoryAddress < 0;
     }
-    // Add event listeners to address and data inputs
+    // Add event listeners for address, store data, and page size changes
     document.getElementById('memoryAddress').addEventListener('input', computeAddressDetails);
     document.getElementById('storeData').addEventListener('input', computeAddressDetails);
     document.getElementById('pageSize').addEventListener('input', computeAddressDetails);
     // Initial computation on page load
     window.addEventListener('load', computeAddressDetails);
 
+    // Function to log messages to the simulation message container
     function logMessage(message) {
         const messageContainer = document.getElementById('simulationMessages');
         const newMessage = document.createElement('p');
@@ -575,6 +587,7 @@
         }
     }
 
+    // Load log messages when the page is loaded
     window.onload = function() {
         const logMessages = /*[[${logMessages}]]*/ []; // Fetch logMessages from the model
         logMessages.forEach(message => {
@@ -582,6 +595,7 @@
         });
     };
 
+    // Function to clear all table highlights
     function clearHighlights() {
         console.log("Clearing highlights...");
         ['tlbTable', 'pageTable', 'mainMemoryTable', 'diskTable'].forEach(tableId => {
@@ -599,6 +613,7 @@
         });
     }
 
+    // Function to highlight a specific row in a table
     async function highlightRow(tableId, searchColumn, searchValue, highlightClass) {
         return new Promise((resolve, reject) => {
             console.log(`Highlighting ${tableId} - Column: ${searchColumn}, Value: ${searchValue}, Class: ${highlightClass}`);
@@ -624,6 +639,7 @@
         });
     }
 
+    // Function to handle the highlighting based on the memory operation (load/store/allocate)
     async function handleMemoryOperation(address) {
         console.log('Starting handleMemoryOperation with address:', address);
         const pageSize = parseInt(document.getElementById('pageSize').value);
@@ -706,6 +722,7 @@
         }
     });
 
+    // Function to collect highlight states for tables
     function getTableHighlightStates(vpn, ppn = null) {
         const tableStates = [
             { tableId: 'pageTable', searchColumn: 0, searchValue: vpn, highlightClass: 'highlight-pagetable' },
@@ -740,6 +757,7 @@
         return tableStates;
     }
 
+    // Save highlight states to session storage
     function saveHighlightState(tableStates) {
         // `tableStates` is an array of objects, each containing {tableId, searchColumn, searchValue, highlightClass}
         sessionStorage.setItem('highlightStates', JSON.stringify(tableStates));
@@ -765,6 +783,14 @@
     window.addEventListener('allocate', applySavedHighlights);
     window.addEventListener('nextOperation', applySavedHighlights);
 
+    let intervalId;
+
+    // Function to execute the next step automatically with a delay
+    function automateOperations() {
+        const delay = 2000; // Set delay in milliseconds (e.g., 2000ms = 2 seconds)
+        intervalId = setInterval(executeNextStep, delay);
+    }
+
     async function executeNextStep() {
         // Disable the button immediately to prevent double-clicks
         const nextStepBtn = document.getElementById('nextStepBtn');
@@ -779,9 +805,11 @@
 
             if (preview.completed) {
                 console.log('All operations completed');
+                logMessage(preview.message);
                 if (nextStepBtn) {
                     nextStepBtn.disabled = false;
                 }
+                clearInterval(intervalId); // Stop the interval when all operations are completed
                 return;
             }
 
@@ -804,8 +832,12 @@
             if (vpn !== -1) {
                 let tableStates = [];
                 if (operationType === "Allocate") {
-                    //await highlightRow("pageTable", 0, vpn, "highlight-pagetable");
-                    const tableStates = getTableHighlightStates(vpn);
+                    await highlightRow("pageTable", 0, vpn, "highlight-pagetable");
+                    //const tableStates = getTableHighlightStates(vpn);
+                    const tableStates = [{ tableId: 'pageTable',
+                                       searchColumn: 0,
+                                       searchValue: vpn,
+                                       highlightClass: 'highlight-pagetable'}];
                     saveHighlightState(tableStates);
                 } else if (operationType === "Load" || operationType === "Store") {
                     const vpn1 = Math.floor(address / getPageSize());
@@ -836,6 +868,12 @@
             }
         }
     }
+
+    // Call the automateOperations function when the page loads
+    // window.onload = function() {
+    //     applySavedHighlights();
+    //     automateOperations();
+    // };
 
 </script>
 </body>

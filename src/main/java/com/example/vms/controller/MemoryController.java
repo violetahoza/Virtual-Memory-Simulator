@@ -354,6 +354,7 @@ public class MemoryController {
 
         if (operations == null || currentStep == null || currentStep >= operations.size()) {
             preview.put("completed", true);
+            preview.put("message", "All operations are completed.");
             return preview;
         }
 
@@ -489,7 +490,6 @@ public class MemoryController {
         data.put("mainMemory", memoryManager.getMainMemory().getMemory());
         data.put("diskEntries", memoryManager.getSecondaryStorage().getDisk());
         data.put("pageTableEntries", memoryManager.getPageTable().getPageTableContents());
-
         return data;
     }
 
